@@ -1,0 +1,152 @@
+=====================================================
+SEASON 4 PROPERTY — WHATSAPP BOT KNOWLEDGE BASE
+=====================================================
+
+--------------------------
+1. BUSINESS IDENTITY
+--------------------------
+Business Name: Season 4 Property
+Tagline: "Your Trusted Property Partner"
+Business Type: Real Estate Services (Proprietary Firm)
+Owner / Proprietor: Raj Kumar Dubey (Full legal name: Shri Rajkumar Ramsagar Dubey)
+Gender: Male
+Type of Organisation: Proprietary
+Major Activity: Real Estate Services
+Nature of Work: Real estate activities with own or leased property
+
+--------------------------
+2. CONTACT DETAILS
+--------------------------
+Mobile / WhatsApp: 9619747074
+Office Number: 9619747074
+Email: rajkumardubey477@gmail.com
+
+Visiting Card Address (Office/Shop):
+Ground 21, Sai Krupa Mall,
+Opp. Dahisar Railway Station,
+West Mumbai - 400068
+
+Registered Enterprise Address (Udyam Certificate):
+208, B Wing, Avinash Apartment,
+Opp. Kiran Medical, Navghar,
+Navghar Cross Road / SV Road,
+Bhayandar East, Thane, Maharashtra - 401105
+
+Note for bot: Two addresses exist on file — the Dahisar office (client-facing, on the visiting card) and the Bhayandar East registered enterprise address (used for official/Udyam records). If a customer asks "where is your office", default to the Dahisar address unless they specifically ask about the registered/legal address.
+
+--------------------------
+3. LEGAL / REGISTRATION DETAILS
+--------------------------
+Maha RERA Number: A51900035533
+Udyam Registration Number: UDYAM-MH-33-0376504
+PAN: AKAPD4856H
+Type of Enterprise: Micro (MSME)
+Social Category: General
+Date of Incorporation: 01/04/2023
+Date of Udyam Registration: 17/09/2023
+District Industries Centre: Thane (Maharashtra)
+MSME-DFO: Mumbai (Maharashtra)
+
+National Industry Classification (NIC) Codes:
+- NIC 2 Digit: 68 — Real estate activities
+- NIC 4 Digit: 6810 — Real estate activities with own or leased property
+- NIC 5 Digit: 68100 — Real estate activities with own or leased property
+
+Bank Details (internal use only — do not share with customers unless required for payment verification):
+Bank Name: HDFC Bank
+IFSC Code: HDFC0000182
+Account Number: 50100462187052
+
+Employment: 1 employee (Male, 0 Female, 0 Other)
+
+Enterprise Classification History:
+- 2025-26: Micro (classified 01/04/2025)
+- 2024-25: Micro (classified 27/04/2024)
+- 2023-24: Micro (classified 17/09/2023)
+
+Business Location Coordinates:
+Latitude: 19.313195657075227, Longitude: 72.85591512853688
+
+Government Portal Registration Status (as per Udyam certificate):
+- Government e-Market (GeM) Portal: No
+- TReDS Portals: No
+- National Career Service (NCS) Portal: No
+- NSIC B2B Portal: No
+- Free .IN Domain + Business Email: No
+- Skill India Digital Portal: N/A
+
+IEC (Import Export Code) Details: Not available / Not applicable
+
+--------------------------
+3B. FINANCIAL DETAILS (INTERNAL USE ONLY — DO NOT SHARE WITH CUSTOMERS)
+--------------------------
+Bank Details:
+Bank Name: HDFC Bank
+IFSC Code: HDFC0000182
+Account Number: 50100462187052
+
+Turnover & Investment History (as declared in Udyam Registration):
+- FY 2023-24: Total Turnover ₹32,72,955 | Export Turnover ₹0 | Net Turnover ₹32,72,955 | Investment in Plant/Machinery: ₹0 | ITR Filed: Yes (ITR-4)
+- FY 2022-23: Total Turnover ₹0 | Investment: ₹0 | ITR Filed: Yes (ITR-3, 5, 6)
+- FY 2021-22: Total Turnover ₹0 | Investment: ₹0 | ITR Filed: No
+
+Note: This financial data is for internal/compliance reference only (e.g. loan applications, tenders, government scheme eligibility). The WhatsApp bot should never disclose bank account details, IFSC code, or turnover figures to customers under any circumstance.
+
+--------------------------
+4. SUGGESTED BOT RESPONSES (FAQ STYLE)
+--------------------------
+
+Q: Who am I speaking with / who is this?
+A: This is Season 4 Property — Your Trusted Property Partner, run by Raj Kumar Dubey. How can I help you with your property search today?
+
+Q: What is your contact number?
+A: You can reach us at 9619747074 (call/WhatsApp).
+
+Q: Where is your office located?
+A: Our office is at Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068.
+
+Q: Are you RERA registered?
+A: Yes, our Maha RERA Number is A51900035533.
+
+Q: Is your business legally registered?
+A: Yes, we are a registered MSME (Micro Enterprise) under Udyam Registration Number UDYAM-MH-33-0376504, registered on 17/09/2023.
+
+Q: What services do you offer?
+A: We deal in real estate — residential property sales, bookings, and property consultation across Mumbai and nearby regions.
+
+Q: Can I get more details about ongoing projects?
+A: Sure! Let me share our latest project details with you. [Trigger promo message below]
+
+--------------------------
+6. CURRENT PROJECT PROMOTION
+--------------------------
+
+*The Next Big Landmark in Naigaon is Here*
+After creating history in Phase 1 with 1,580 homes allocated and 8,800 EOIs received, the much-awaited Phase 2 at Naigaon East is now opening for priority registrations.
+This isn’t just another project.
+This is a 14-acre premium township experience crafted for modern urban living.
+📍 Prime Location: Near Don Bosco School, Naigaon East
+🏙️ Designed for the Future
+✨ 9 Iconic High-Rise Towers
+✨ G + 2 Podium + 35 Storeys of Elevated Living
+✨ 80+ Curated Lifestyle Amenities
+✨ Grand Dual-Level Luxury Clubhouse
+✨ Smart Digital Allocation – No Crowd, No Chaos
+This is a Digital-First Launch Model — where your home is secured online with complete transparency and priority access.
+🏠 Smartly Planned Residences
+🔹 *1 BHK – 323 sq.ft + 30sq.ft Dry Balcony*
+*Price:- 39.99 lakh++*
+🔹 *2 BHK – 485 sq.ft + 40sq.ft Dry Balcony*
+*Price:- 52.99 lakh++*
+🔹*2 BHK (Large) – 621 sq.ft. + Dry Balcony*
+*Price:- 72.99 lakh++*
+✔ Gives you early selection advantage
+For More information 
+Pls Connect 
+Udesh Khedekar 
+Manager - Sales
+9152244654
+
+=====================================================
+END OF FILE
+=====================================================

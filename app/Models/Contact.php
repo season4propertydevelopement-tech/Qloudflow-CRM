@@ -57,11 +57,6 @@ class Contact extends Model
         return $this->hasMany(Message::class);
     }
 
-    public function voiceCalls(): HasMany
-    {
-        return $this->hasMany(VoiceCall::class);
-    }
-
     // Scopes
     public function scopeHot(Builder $query): Builder
     {
@@ -160,18 +155,17 @@ class Contact extends Model
 
         $hotSignals = [
             'price', 'pricing', 'cost', 'quote', 'quotation', 'rate', 'rates',
-            'deluxe', 'economy', 'starter', 'ultimate', 'package',
-            'buy', 'purchase', 'hire', 'order', 'booking', 'book', 'schedule',
+            '1bhk', '2bhk', '1 bhk', '2 bhk', '3bhk', 'flat', 'apartment', 'residence',
+            'buy', 'purchase', 'booking', 'book', 'schedule', 'site visit', 'visit',
             'call me', 'talk to', 'contact number', 'phone number', 'meet',
-            'proposal', 'budget', 'payment', 'pay', 'bank', 'invoice',
-            'start project', 'how much'
+            'naigaon', 'dahisar', 'bhayandar', 'budget', 'down payment', 'emi', 'loan',
+            'how much', 'eoi', 'priority'
         ];
 
         $warmSignals = [
-            'service', 'services', 'feature', 'features', 'portfolio', 'work', 'sample', 'samples',
-            'detail', 'details', 'information', 'about', 'how it works', 'seo', 'gmb',
-            'development', 'wordpress', 'react', 'flutter', 'e-commerce', 'ecommerce',
-            'android', 'ios', 'tech stack', 'technology', 'can you do'
+            'property', 'real estate', 'rera', 'amenities', 'tower', 'project', 'location',
+            'possession', 'carpet area', 'sqft', 'sq.ft', 'details', 'information', 'about',
+            'sample flat', 'brochure', 'floor plan', 'raj kumar', 'dubey', 'sai krupa', 'office'
         ];
 
         $hotHits = 0;
@@ -193,11 +187,11 @@ class Contact extends Model
         if ($hotHits >= 1) {
             $this->lead_status = 'hot';
             $this->lead_score = min(98, 80 + ($hotHits * 5));
-            $this->notes = "Lead Qualified as HOT based on commercial intent in {$clientMsgCount} messages.";
+            $this->notes = "Lead Qualified as HOT based on property purchase intent in {$clientMsgCount} messages.";
         } elseif ($warmHits >= 1) {
             $this->lead_status = 'warm';
             $this->lead_score = min(75, 50 + ($warmHits * 5));
-            $this->notes = "Lead Qualified as WARM based on interest in services in {$clientMsgCount} messages.";
+            $this->notes = "Lead Qualified as WARM based on property inquiry in {$clientMsgCount} messages.";
         } else {
             $this->lead_status = 'cold';
             $this->lead_score = 15;
@@ -214,9 +208,8 @@ class Contact extends Model
     {
         $hotKeywords = [
             'price', 'pricing', 'cost', 'quote', 'quotation', 'rate',
-            'deluxe', 'economy', 'starter', 'ultimate',
-            'buy', 'purchase', 'hire', 'schedule', 'call me', 'proposal',
-            'start project', 'how much'
+            '1bhk', '2bhk', 'flat', 'buy', 'purchase', 'booking', 'book',
+            'site visit', 'visit', 'call me', 'talk to', 'naigaon', 'how much'
         ];
 
         foreach ($hotKeywords as $kw) {

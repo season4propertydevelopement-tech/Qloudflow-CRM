@@ -7,8 +7,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BotTestController;
-use App\Http\Controllers\VoiceAgentController;
-use App\Http\Controllers\PlivoVoiceController;
 
 // Guest Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -54,28 +52,4 @@ Route::middleware('auth')->group(function () {
     // Chatbot Simulator & Live Sandbox Testing Routes
     Route::post('/bot/test', [BotTestController::class, 'simulateMessage'])->name('bot.test');
     Route::post('/bot/test/reset', [BotTestController::class, 'resetSession'])->name('bot.test.reset');
-
-    // AI Voice Calling Agent Views (Universal Calling Assistant)
-    Route::prefix('voice-agent')->name('voice-agent.')->group(function () {
-        Route::get('/', [VoiceAgentController::class, 'index'])->name('index');
-        Route::get('/analytics', [VoiceAgentController::class, 'analytics'])->name('analytics');
-    });
-});
-
-// Voice Agent API Endpoints (Direct Streaming & Conversational Turns)
-Route::prefix('voice-agent/api')->name('voice-agent.api.')->group(function () {
-    Route::get('/tts', [VoiceAgentController::class, 'ttsAudio'])->name('tts');
-    Route::post('/chat', [VoiceAgentController::class, 'chat'])->name('chat');
-    Route::post('/analyze', [VoiceAgentController::class, 'analyze'])->name('analyze');
-    Route::post('/test-key', [VoiceAgentController::class, 'testKey'])->name('test-key');
-    Route::post('/send-whatsapp', [VoiceAgentController::class, 'sendFollowupWhatsApp'])->name('send-whatsapp');
-});
-
-// Plivo Cloud Telephony Endpoints (Avni Real Phone Calling & Webhooks)
-Route::prefix('voice-agent/plivo')->name('voice-agent.plivo.')->group(function () {
-    Route::get('/account', [PlivoVoiceController::class, 'accountStatus'])->name('account');
-    Route::post('/dial', [PlivoVoiceController::class, 'dial'])->name('dial');
-    Route::match(['get', 'post'], '/answer', [PlivoVoiceController::class, 'answer'])->name('answer');
-    Route::match(['get', 'post'], '/input', [PlivoVoiceController::class, 'input'])->name('input');
-    Route::match(['get', 'post'], '/hangup', [PlivoVoiceController::class, 'hangup'])->name('hangup');
 });

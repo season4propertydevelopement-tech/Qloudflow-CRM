@@ -13,10 +13,6 @@
         </div>
 
         <div class="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-2.5 shrink-0 w-full sm:w-auto">
-            <a href="{{ route('voice-agent.index') }}" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white font-bold text-xs rounded-xl shadow-xs transition text-center col-span-2 sm:col-span-1">
-                <i class="fa-solid fa-headset text-xs"></i>
-                <span>Voice AI Studio</span>
-            </a>
             <a href="{{ route('whatsapp.connection') }}" class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition text-center">
                 <i class="fa-solid fa-qrcode text-xs"></i>
                 <span>Pair WhatsApp</span>
@@ -186,16 +182,6 @@
                         <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-300 shrink-0">
                             Ready
                         </span>
-                    </div>
-
-                    <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
-                            <i class="fa-solid fa-headset text-indigo-500 text-xs"></i>
-                            <span>Voice AI Engine (Hindi/Hinglish)</span>
-                        </div>
-                        <a href="{{ route('voice-agent.index') }}" class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-200 transition shrink-0">
-                            Launch Studio →
-                        </a>
                     </div>
 
                     <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-200">

@@ -183,11 +183,6 @@
 
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-1.5">
-                            <!-- AI Voice Call -->
-                            <a href="{{ route('voice-agent.index', ['contact_id' => $contact->id, 'name' => $contact->name, 'phone' => $contact->phone]) }}" class="p-1.5 bg-pink-50 border border-pink-200 text-pink-700 hover:bg-pink-100 rounded-xl transition text-xs font-bold" title="Voice Call with AI">
-                                <i class="fa-solid fa-phone text-xs"></i>
-                            </a>
-
                             @php
                                 $firstConv = $contact->conversations->first();
                             @endphp
@@ -385,12 +380,6 @@
                                         <span>{{ $contact->chatbot_enabled ? 'Pause' : 'Enable' }}</span>
                                     </button>
                                 </form>
-
-                                <!-- AI Voice Call -->
-                                <a href="{{ route('voice-agent.index', ['contact_id' => $contact->id, 'name' => $contact->name, 'phone' => $contact->phone]) }}" class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 bg-pink-50 border border-pink-200 text-pink-700 hover:bg-pink-100 rounded-xl transition" title="Start AI Voice Call">
-                                    <i class="fa-solid fa-phone text-xs"></i>
-                                    <span>Call</span>
-                                </a>
 
                                 <!-- View Details -->
                                 <a href="{{ route('contacts.show', $contact) }}" class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-xl transition">

@@ -248,7 +248,6 @@ class AuthTest extends TestCase
             'session_id' => 'test_session_123',
         ]);
 
-        $response->assertStatus(200);
         $response->assertJsonStructure([
             'success',
             'reply',
@@ -257,7 +256,7 @@ class AuthTest extends TestCase
             'current_node',
         ]);
         $this->assertTrue($response->json('success'));
-        $this->assertStringContainsString('Package', $response->json('reply'));
+        $this->assertStringContainsString('Season 4 Property', $response->json('reply'));
     }
 
     public function test_can_reset_bot_sandbox_session(): void

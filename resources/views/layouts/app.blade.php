@@ -43,8 +43,7 @@
 
         <!-- Navigation Menu -->
         <nav class="flex-1 px-3 py-4 space-y-4 overflow-y-auto" x-data="{
-            whatsappOpen: {{ (request()->routeIs('contacts.*') || request()->routeIs('conversations.*') || request()->routeIs('whatsapp.*')) ? 'true' : 'false' }},
-            voiceOpen: {{ request()->routeIs('voice-agent.*') ? 'true' : 'false' }}
+            whatsappOpen: {{ (request()->routeIs('contacts.*') || request()->routeIs('conversations.*') || request()->routeIs('whatsapp.*')) ? 'true' : 'false' }}
         }">
             <!-- Workspace Overview -->
             <div>
@@ -114,48 +113,6 @@
                         <a href="{{ route('whatsapp.settings') }}" class="flex items-center px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors {{ request()->routeIs('whatsapp.settings') ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
                             <i class="fa-solid fa-sliders w-3.5 text-center mr-2 text-[11px] {{ request()->routeIs('whatsapp.settings') ? 'text-emerald-400' : 'text-slate-500' }}"></i>
                             <span class="truncate">Bot Schedule & Settings</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- AI Voice Calling Agent Dropdown -->
-                <div class="space-y-1 mt-2">
-                    <button
-                        type="button"
-                        @click="voiceOpen = !voiceOpen"
-                        class="w-full flex items-center justify-between px-3 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer {{ request()->routeIs('voice-agent.*') ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' : 'text-slate-200 hover:bg-slate-800/80 hover:text-white' }}"
-                    >
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs">
-                                <i class="fa-solid fa-headset text-xs"></i>
-                            </div>
-                            <span class="text-xs truncate">Voice Calling Agent</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 border border-pink-500/30">Hinglish</span>
-                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="voiceOpen ? 'transform rotate-180 text-indigo-400' : ''"></i>
-                        </div>
-                    </button>
-
-                    <!-- Dropdown Sub-Items -->
-                    <div
-                        x-show="voiceOpen"
-                        x-transition:enter="transition ease-out duration-150"
-                        x-transition:enter-start="opacity-0 -translate-y-1"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-100"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 -translate-y-1"
-                        class="pl-3.5 pr-1 py-1 space-y-1 border-l border-slate-800 ml-3 mt-1"
-                    >
-                        <a href="{{ route('voice-agent.index') }}" class="flex items-center px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors {{ request()->routeIs('voice-agent.index') ? 'bg-indigo-500/20 text-indigo-300 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                            <i class="fa-solid fa-microphone-lines w-3.5 text-center mr-2 text-[11px] {{ request()->routeIs('voice-agent.index') ? 'text-indigo-400' : 'text-slate-500' }}"></i>
-                            <span class="truncate">Live Voice Studio</span>
-                        </a>
-
-                        <a href="{{ route('voice-agent.analytics') }}" class="flex items-center px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors {{ request()->routeIs('voice-agent.analytics') ? 'bg-indigo-500/20 text-indigo-300 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' }}">
-                            <i class="fa-solid fa-chart-line w-3.5 text-center mr-2 text-[11px] {{ request()->routeIs('voice-agent.analytics') ? 'text-indigo-400' : 'text-slate-500' }}"></i>
-                            <span class="truncate">Call CRM Intelligence</span>
                         </a>
                     </div>
                 </div>
@@ -229,12 +186,6 @@
                             Bot Schedule & Settings
                         @elseif(request()->routeIs('whatsapp.*'))
                             WhatsApp Connection
-                        @elseif(request()->routeIs('voice-agent.personas'))
-                            Female Voice Personas
-                        @elseif(request()->routeIs('voice-agent.analytics'))
-                            Call CRM Intelligence
-                        @elseif(request()->routeIs('voice-agent.*'))
-                            AI Voice Calling Studio
                         @else
                             Workspace Overview
                         @endif
@@ -412,31 +363,6 @@
                         </div>
                     </div>
 
-                    <div>
-                        <div class="flex items-center justify-between px-3 mb-2">
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Voice Calling AI</p>
-                            <span class="text-[8px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-pink-500/20 text-pink-300 border border-pink-500/30">Hinglish</span>
-                        </div>
-                        <div class="space-y-1">
-                            <a
-                                href="{{ route('voice-agent.index') }}"
-                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition {{ request()->routeIs('voice-agent.index') ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}"
-                                @click="mobileMenuOpen = false"
-                            >
-                                <i class="fa-solid fa-microphone-lines w-4 text-center"></i>
-                                <span>Live Voice Studio</span>
-                            </a>
-                            <a
-                                href="{{ route('voice-agent.analytics') }}"
-                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition {{ request()->routeIs('voice-agent.analytics') ? 'bg-indigo-600 text-white font-bold shadow-xs' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}"
-                                @click="mobileMenuOpen = false"
-                            >
-                                <i class="fa-solid fa-chart-line w-4 text-center"></i>
-                                <span>Call CRM Intelligence</span>
-                            </a>
-                        </div>
-                    </div>
-
                     <!-- AI Status Tag -->
                     <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
                         <div class="flex items-center justify-between text-xs font-medium text-slate-300">
@@ -445,13 +371,6 @@
                                 <span>AI Chatbot</span>
                             </div>
                             <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold">Active</span>
-                        </div>
-                        <div class="flex items-center justify-between text-xs font-medium text-slate-300 pt-1.5 border-t border-slate-800/60">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-headset text-indigo-400 text-xs"></i>
-                                <span>Voice AI</span>
-                            </div>
-                            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-bold">Ready</span>
                         </div>
                     </div>
                 </div>

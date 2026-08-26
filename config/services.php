@@ -46,11 +46,4 @@ return [
         'key' => env('WHATSAPP_API_KEY', 'local-development-key'),
     ],
 
-    'plivo' => [
-        'auth_id' => env('PLIVO_AUTH_ID', 'MAN2MXNDE2MWUTOWY5NS'),
-        'auth_token' => env('PLIVO_AUTH_TOKEN', 'OTY2OWFmODUtZDNjYS00YjRjLTU1ZjEtMTAxOWVm'),
-        'phone_number' => env('PLIVO_PHONE_NUMBER', '918031803464'),
-        'agent_name' => env('PLIVO_AGENT_NAME', 'Avni'),
-    ],
-
 ];
