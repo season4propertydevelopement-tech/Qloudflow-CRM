@@ -117,9 +117,21 @@ class WhatsAppApiService
             }
 
             $response = $this->client(45)->post("{$this->baseUrl}/api/messages/send-media", $payload);
-            return $response->json() ?? ['success' => true];
+            if ($response->successful()) {
+                return $response->json() ?? ['success' => true];
+            }
+
+            Log::warning("WhatsApp API sendMedia HTTP error {$response->status()}: " . substr($response->body(), 0, 300));
+            // Fallback to text reply so prospect is never left without response
+            if (!empty($caption)) {
+                return $this->sendMessage($phone, $caption);
+            }
+            return ['success' => false, 'error' => "HTTP {$response->status()}"];
         } catch (\Throwable $e) {
             Log::warning("WhatsApp API sendMedia error: " . $e->getMessage());
+            if (!empty($caption)) {
+                return $this->sendMessage($phone, $caption);
+            }
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }

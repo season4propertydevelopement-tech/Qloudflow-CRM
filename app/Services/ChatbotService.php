@@ -665,6 +665,7 @@ class ChatbotService
         Message::create([
             'conversation_id' => $conversation->id,
             'contact_id' => $contact->id,
+            'external_message_id' => $response['messageId'] ?? null,
             'direction' => 'outgoing',
             'message' => $reply,
             'media_url' => $formattedMediaUrl,
