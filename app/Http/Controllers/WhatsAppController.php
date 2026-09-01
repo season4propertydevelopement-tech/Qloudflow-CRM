@@ -59,14 +59,26 @@ class WhatsAppController extends Controller
     public function sync(WebhookController $webhookController)
     {
         try {
-            $unhandled = $this->apiService->getUnhandledMessages();
+            $sinceId = \Illuminate\Support\Facades\Cache::get('whatsapp_last_synced_message_id');
+            $unhandled = $this->apiService->getUnhandledMessages($sinceId);
             $processedCount = 0;
+            $latestId = null;
+
             if (!empty($unhandled['messages']) && is_array($unhandled['messages'])) {
                 foreach ($unhandled['messages'] as $payload) {
+                    $msgId = $payload['messageId'] ?? null;
+                    if ($msgId) {
+                        $latestId = $msgId;
+                    }
                     $webhookController->processIncomingMessage($payload, $this->apiService);
                     $processedCount++;
                 }
+
+                if ($latestId) {
+                    \Illuminate\Support\Facades\Cache::forever('whatsapp_last_synced_message_id', $latestId);
+                }
             }
+
             return response()->json([
                 'success' => true,
                 'synced' => $processedCount,

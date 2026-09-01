@@ -20,12 +20,13 @@
                     this.phone = data.phone || 'N/A';
                     this.name = data.name || 'WhatsApp Account';
                     this.qrCode = null;
-                    // Trigger sync in background to process any unhandled incoming messages
                     fetch('{{ url('/whatsapp/api/sync') }}').catch(() => {});
-                } else if (data.status === 'connecting' && data.qrAvailable) {
+                } else if (data.qrAvailable || data.status === 'connecting') {
                     this.fetchQR();
                 } else if (data.status === 'disconnected') {
-                    this.qrCode = null;
+                    if (!this.isLoading && !this.qrCode) {
+                        this.handleConnect();
+                    }
                 }
             }
         } catch (e) {

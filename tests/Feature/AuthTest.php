@@ -205,10 +205,10 @@ class AuthTest extends TestCase
 
         // Add 5 conversation messages
         \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Hello there']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'Welcome to Qloudsoft']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'I want to know the pricing for website development']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'We offer Starter, Economy, Deluxe, Ultimate']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Please share a quotation and let us schedule a call to start the project']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'Welcome to Season 4 Property!']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'I want to know the 2 BHK flat pricing and booking amount']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => '2 BHK starts at ₹52.99L++ with 80+ luxury amenities.']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Please schedule a site visit this Sunday for booking and call me']);
 
         $contact->evaluateLeadFromConversationHistory($conv);
         $this->assertEquals('hot', $contact->fresh()->lead_status);
@@ -218,7 +218,7 @@ class AuthTest extends TestCase
     public function test_evaluates_warm_lead_after_5_conversation_messages(): void
     {
         $contact = \App\Models\Contact::create([
-            'name' => 'Warm Services Lead',
+            'name' => 'Warm Property Lead',
             'phone' => '4444444441',
             'lead_status' => 'cold',
         ]);
@@ -227,12 +227,12 @@ class AuthTest extends TestCase
             'status' => 'active'
         ]);
 
-        // Add 5 conversation messages inquiring about general services
+        // Add 5 conversation messages inquiring about general property details
         \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Hi']);
         \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'Welcome!']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'What development services and tech stack do you use?']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'We specialize in Flutter, React, Laravel, WordPress and SEO.']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Can you show some portfolio samples for mobile apps?']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'What amenities and floor plan details are available in the Naigaon project?']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'We offer 80+ amenities and 1 BHK / 2 BHK layouts.']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Can you share the project brochure and MahaRERA registration number?']);
 
         $contact->evaluateLeadFromConversationHistory($conv);
         $this->assertEquals('warm', $contact->fresh()->lead_status);
@@ -273,6 +273,56 @@ class AuthTest extends TestCase
             'lead_status' => 'cold',
             'lead_score' => 10,
         ]);
+    }
+
+    public function test_can_delete_contact_manually(): void
+    {
+        $user = User::factory()->create();
+        $contact = \App\Models\Contact::create([
+            'name' => 'Delete Me',
+            'phone' => '1234567890',
+            'lead_status' => 'cold',
+        ]);
+        $conv = \App\Models\Conversation::create([
+            'contact_id' => $contact->id,
+            'status' => 'active',
+        ]);
+        \App\Models\Message::create([
+            'conversation_id' => $conv->id,
+            'contact_id' => $contact->id,
+            'direction' => 'incoming',
+            'message' => 'Hello',
+        ]);
+
+        $response = $this->actingAs($user)->delete(route('contacts.destroy', $contact));
+        $response->assertRedirect(route('contacts.index'));
+        $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
+        $this->assertDatabaseMissing('conversations', ['id' => $conv->id]);
+    }
+
+    public function test_can_delete_conversation_manually(): void
+    {
+        $user = User::factory()->create();
+        $contact = \App\Models\Contact::create([
+            'name' => 'Keep Contact',
+            'phone' => '9876543210',
+            'lead_status' => 'cold',
+        ]);
+        $conv = \App\Models\Conversation::create([
+            'contact_id' => $contact->id,
+            'status' => 'active',
+        ]);
+        \App\Models\Message::create([
+            'conversation_id' => $conv->id,
+            'contact_id' => $contact->id,
+            'direction' => 'incoming',
+            'message' => 'Test chat',
+        ]);
+
+        $response = $this->actingAs($user)->delete(route('conversations.destroy', $conv));
+        $response->assertRedirect(route('conversations.index'));
+        $this->assertDatabaseMissing('conversations', ['id' => $conv->id]);
+        $this->assertDatabaseHas('contacts', ['id' => $contact->id]);
     }
 }
 

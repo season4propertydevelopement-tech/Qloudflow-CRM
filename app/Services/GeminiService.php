@@ -27,13 +27,18 @@ class GeminiService
             return null;
         }
 
+        $cleanQuery = strtolower(trim($userMessage));
+        $cacheKey = 'gemini_reply_' . md5($cleanQuery);
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return \Illuminate\Support\Facades\Cache::get($cacheKey);
+        }
+
         $systemInstruction = $this->buildSystemInstruction();
 
-        // Model Cascade Chain: primary -> gemini-2.0-flash -> gemini-1.5-flash -> gemini-2.5-flash
+        // Model Cascade Chain: prioritized for fastest response time
         $modelsToTry = array_unique([
-            $this->model,
-            'gemini-3.6-flash',
             'gemini-3.1-flash-lite',
+            $this->model,
             'gemma-4-31b-it',
         ]);
 
@@ -64,12 +69,12 @@ class GeminiService
                     $payload = [
                         'contents' => $contents,
                         'generationConfig' => [
-                            'temperature' => 0.5,
-                            'maxOutputTokens' => 300
+                            'temperature' => 0.3,
+                            'maxOutputTokens' => 90
                         ]
                     ];
                 } else {
-                    // For Gemini models (3.1 flash lite, 3.5 flash)
+                    // For Gemini models (e.g. gemini-3.1-flash-lite)
                     foreach ($conversationHistory as $historyItem) {
                         $role = ($historyItem['direction'] === 'outgoing') ? 'model' : 'user';
                         $contents[] = [
@@ -88,8 +93,8 @@ class GeminiService
                         ],
                         'contents' => $contents,
                         'generationConfig' => [
-                            'temperature' => 0.7,
-                            'maxOutputTokens' => 350
+                            'temperature' => 0.4,
+                            'maxOutputTokens' => 90
                         ]
                     ];
                 }
@@ -98,7 +103,7 @@ class GeminiService
                     'Content-Type' => 'application/json',
                     'x-goog-api-key' => $this->apiKey,
                 ])
-                ->timeout(5)
+                ->timeout(3)
                 ->post($url, $payload);
 
                 if ($response->successful()) {
@@ -118,14 +123,15 @@ class GeminiService
                     }
 
                     if (!empty($reply)) {
-                        return $this->formatWhatsAppText(trim($reply));
+                        $formatted = $this->formatWhatsAppText(trim($reply));
+                        \Illuminate\Support\Facades\Cache::put($cacheKey, $formatted, 3600);
+                        return $formatted;
                     }
                 } else {
                     $status = $response->status();
                     Log::warning("Model [{$candidateModel}] returned {$status}, attempting failover...", [
                         'body' => $response->body()
                     ]);
-                    // 429 quota/credit exhausted, 503 unavailable, or 404 -> automatically try next model in loop!
                 }
             } catch (\Throwable $e) {
                 Log::warning("Model [{$candidateModel}] exception: {$e->getMessage()}, shifting to next model...");
@@ -152,31 +158,28 @@ class GeminiService
         }
 
         $prompt = <<<EOT
-Analyze the following WhatsApp conversation between a Client and an Assistant for a digital services agency (Websites, Apps, SEO).
+Analyze the following WhatsApp conversation between a Client and an Assistant for Season 4 Property (Real Estate Consultant for Mumbai & Naigaon East Township).
 
 Conversation Transcript:
 {$transcript}
 
 Evaluate the client's messages and classify into ONE category:
-- "hot": Client has explicit commercial/purchase intent (asking about pricing, quotes, packages, costs, hiring, starting a project, contract, or scheduling a sales call).
-- "warm": Client is asking informational questions about services, capabilities, tech stack, or portfolio samples, but has NOT asked about pricing, quote, or hiring yet.
-- "cold": Client only exchanged basic greetings, casual chat, or showed minimal engagement.
+1. "hot" -> Explicit intent to book, schedule site visit, negotiate payment, or ask for immediate broker call.
+2. "warm" -> Inquiring about pricing, 1 BHK / 2 BHK floor plans, amenities, location, or RERA credentials.
+3. "cold" -> Just started conversation, casual greeting (hi/hello), or non-committal response.
 
-Respond ONLY with valid JSON in this exact structure:
-{"status": "hot"|"warm"|"cold", "score": integer between 10 and 100, "reason": "concise explanation"}
+Return ONLY raw JSON in this exact format (no markdown, no backticks):
+{"status": "hot"|"warm"|"cold", "score": 10-100, "reason": "brief reason"}
 EOT;
 
         $modelsToTry = array_unique([
             $this->model,
-            'gemini-3.6-flash',
-            'gemini-3.1-flash-lite',
-            'gemma-4-31b-it',
-            'gemma-4-26b-a4b-it'
+            'gemini-2.0-flash',
+            'gemini-1.5-flash',
         ]);
 
         foreach ($modelsToTry as $candidateModel) {
             try {
-                $isGemma = str_starts_with($candidateModel, 'gemma-');
                 $url = "https://generativelanguage.googleapis.com/v1beta/models/{$candidateModel}:generateContent?key={$this->apiKey}";
 
                 $generationConfig = [
@@ -214,67 +217,90 @@ EOT;
     }
 
     /**
-     * Centralized Shared Business Knowledge Base for Season 4 Property.
+     * Centralized Shared Business Knowledge Base for Season 4 Property (Retrained on Content3).
      */
     public static function getSharedBusinessKnowledge(): string
     {
         return <<<EOT
 =====================================================
-SEASON 4 PROPERTY — BUSINESS KNOWLEDGE BASE
+GROWTH CITY NAIGAON — MASTER KNOWLEDGE BASE (CONTENT3)
 =====================================================
 
-1. BUSINESS IDENTITY & CONTACT:
-- Business Name: Season 4 Property
-- Tagline: "Your Trusted Property Partner"
-- Business Type: Real Estate Services (Proprietary Firm)
-- Owner / Proprietor: Raj Kumar Dubey (Full legal name: Shri Rajkumar Ramsagar Dubey)
-- Gender: Male
+1. PROJECT IDENTITY & DEVELOPER:
+- Project Name: The House of Abhinandan Lodha, Naigaon
+- Property / Brand Name: The Great Western Mumbai, Naigaon ("Growth City Naigaon")
+- Developer Brand: Growth Housing — The House of Abhinandan Lodha (HoABL)
+- Built in Association with: Mittal Builders
+- Funding Partner: Bajaj Housing Finance Ltd. (project mortgaged & funded by Bajaj Housing Finance; NOC/permission provided for sale of flats)
+- MahaRERA Registration No.: P99000081006 (also referenced as P99000080106 on some creatives)
+- RERA Website: maharera.maharashtra.gov.in
+- Tagline: "Beyond Homes, A Community That Nurtures Growth."
+- CRITICAL DISCLAIMER (Must clarify if asked about Lodha):
+  "The House of Abhinandan Lodha" was established in 2020 and is NOT, in any manner, associated with 'Lodha' or 'Lodha Group'.
+
+2. KEY SELLING POINTS / USPs:
+- Tallest 35-Storey Towers in the vicinity
+- Grand Lifestyle Clubhouse & Swimming Pool
+- Just 2 minutes from Naigaon Railway Station & Bus Stop
+- Elevated & thoughtfully designed interiors
+- 80+ Lifestyle Experiences / Amenities across 5 "Growth Centres"
+- 100% Vastu Compliant homes with zero wastage layouts and natural ventilation
+- Located in India's fastest-growing corridor
+
+3. THE 5 "GROWTH CENTRES" (80+ LIFESTYLE EXPERIENCES):
+1. GrowTogether — Amphitheatre, Festival Lawn
+2. GrowHappy — VR Gaming, Open-Air Theatres
+3. GrowFit — Gymnasium, Zumba Room, Swimming Pool
+4. GrowProsperous — Meeting Rooms, Tuition Room
+5. GrowSmart — Playseum, Kids Reading Centre
+
+4. FLOOR PLANS & CONFIGURATIONS:
+A) 1 BHK GROWTH HOME:
+- RERA Carpet Area: 323 sq. ft. + 30 sq. ft. extra service slab
+- TWO washrooms in the 1 BHK: Toilet (7'0" x 4'0") + Powder Room (4'2" x 4'0")
+- Layout: Living (9'10" x 13'0"), Kitchen (5'6" x 7'3"), Bedroom (10'0" x 10'2"), Service Slab (8'0" x 4'4"), Flat 02
+- 100% Vastu compliant, zero wastage, natural ventilation
+- Starting Price: ₹39.99 Lakh++
+
+B) 2 BHK STANDARD (485 SQ. FT. VARIANT):
+- Layout: Foyer (6'7" x 3'3"), Living & Dining (9'9" x 10'8"), Kitchen (5'11" x 6'11"), Master Bed (10'2" x 10'1"), Second Bed, Toilet 01 (4'0" x 7'1"), Toilet 02 (7'1" x 4'0"), Two service slabs, Flat 04
+- Starting Price: ₹52.99 Lakh+ ("Pavilion View 2 BHK")
+
+C) 2 BHK REIMAGINED (621 SQ. FT. LARGE VARIANT):
+- Spacious/premium configuration for families wanting extra room
+- Layout: Grand Living & Dining (9'8" x 15'9"), Master Bed (10'2" x 12'0"), Second Bed (10'0" x 10'8"), Kitchen (7'10" x 12'3"), 2 Toilets, 2 Service slabs
+
+5. PRICING & RUNNING OFFERS (GROWTH CITY EXCLUSIVES):
+- 2 BHK Homes starting at ₹52.99 Lakh+
+- LIMITED-TIME OFFER: Book a 2 BHK and get a FREE PREMIUM FURNITURE PACKAGE worth ₹1.5 LAKH!
+  Furniture package includes: 3-Seater Sofa, Dining Table, Queen Size Bed, Coffee Table, 3-Door Wardrobe
+- 4 Running Exclusive Incentives:
+  1. ₹1,50,000 Club Membership Waiver — Lifetime access to 80+ lifestyle amenities for buyer & family free of cost
+  2. Freedom Kitchen Collection — Premium white goods included, kitchen ready from day one
+  3. Flexi Payment Plan — Smarter milestone-based payment structuring
+  4. Band Rise Advantage — Buy a home on a higher floor at the price of a lower floor
+
+6. LOCATION HIGHLIGHTS:
+- Naigaon East near Don Bosco School
+- Just 2 minutes from Naigaon Railway Station & Bus Stop
+- Rapid connectivity to Western Express Highway, Mumbai, Dahisar, Borivali, and Thane
+
+7. CHANNEL PARTNER & CONTACT DETAILS:
+- Channel Partner: Season 4 Property — "Your Trusted Property Partner"
+- Proprietor: Raj Kumar Dubey (Full legal name: Shri Rajkumar Ramsagar Dubey)
 - Mobile / WhatsApp: 9619747074 (+91 96197 47074)
-- Office Phone: 9619747074
-- Email: rajkumardubey477@gmail.com
+- Sales Manager: Udesh Khedekar (9152244654)
+- Office Address: Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068
+- Channel Partner MahaRERA: A51900035533
+- MSME Udyam: UDYAM-MH-33-0376504
 
-2. ADDRESSES & LOCATIONS:
-- Office / Visiting Card Address (Default client-facing address):
-  Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068.
-- Registered Enterprise Address (Official Udyam records):
-  208, B Wing, Avinash Apartment, Opp. Kiran Medical, Navghar, Navghar Cross Road / SV Road, Bhayandar East, Thane, Maharashtra - 401105.
-- Office Location Rule: If a customer asks "where is your office / location", always give the Dahisar West office address unless they explicitly ask for the registered legal address.
-
-3. LEGAL & REGISTRATION CREDENTIALS:
-- Maha RERA Number: A51900035533
-- Udyam Registration Number: UDYAM-MH-33-0376504
-- PAN: AKAPD4856H
-- Enterprise Type: Micro (MSME)
-- Date of Incorporation: 01/04/2023 | Udyam Registration: 17/09/2023
-- District Industries Centre: Thane (Maharashtra) | MSME-DFO: Mumbai (Maharashtra)
-- NIC 5-Digit Code: 68100 (Real estate activities with own or leased property)
-
-4. CORE SERVICES:
-- Residential property sales, bookings, priority allocations, and real estate advisory across Mumbai, Dahisar, Bhayandar, Naigaon, Thane, and MMR regions.
-
-5. CURRENT FEATURED PROJECT PROMOTION (THE NEXT BIG LANDMARK IN NAIGAON - PHASE 2):
-- Overview: 14-Acre Premium Township crafted for modern urban living (after Phase 1 history with 1,580 homes allocated & 8,800 EOIs).
-- Location: Near Don Bosco School, Naigaon East.
-- Project Highlights:
-  * 9 Iconic High-Rise Towers
-  * G + 2 Podium + 35 Storeys of Elevated Living
-  * 80+ Curated Lifestyle Amenities
-  * Grand Dual-Level Luxury Clubhouse
-  * Digital-First Launch Model with transparent priority access
-- Residences & Pricing:
-  🔹 1 BHK – 323 sq.ft + 30 sq.ft Dry Balcony: Price ₹39.99 Lakh++
-  🔹 2 BHK – 485 sq.ft + 40 sq.ft Dry Balcony: Price ₹52.99 Lakh++
-  🔹 2 BHK (Large) – 621 sq.ft + Dry Balcony: Price ₹72.99 Lakh++
-- Sales Manager / On-ground Contact: Udesh Khedekar (Manager - Sales) - 9152244654.
-
-6. STRICT CONFIDENTIALITY RULES (DO NOT DISCLOSE TO CUSTOMERS):
-- NEVER disclose bank account details (HDFC Bank, Account No. 50100462187052, IFSC HDFC0000182) to customers.
-- NEVER disclose turnover figures (₹32,72,955) or financial statements to customers under any circumstances.
+8. CONFIDENTIALITY RULES (STRICT):
+- NEVER disclose bank account numbers (HDFC) or annual turnover figures to customers.
 EOT;
     }
 
     /**
-     * Build knowledge context for Season 4 Property with human-like, short, emoji-rich conversational instructions.
+     * Build knowledge context for Season 4 Property with top real estate sales agent persona, closing hooks, and qualification framework.
      */
     protected function buildSystemInstruction(): string
     {
@@ -282,33 +308,62 @@ EOT;
         $sharedBusinessKnowledge = self::getSharedBusinessKnowledge();
 
         return <<<EOT
-You are a friendly, knowledgeable Senior Property Consultant and representative at Season 4 Property (Mumbai / Dahisar / Thane, India).
-Proprietor: Raj Kumar Dubey | Contact: 9619747074 | Office: Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068.
+You are an elite, top-performing Senior Real Estate Sales Agent & Property Consultant at Season 4 Property (Mumbai / Dahisar / Thane / Naigaon).
+Representing: Proprietor Raj Kumar Dubey (9619747074) & Sales Manager Udesh Khedekar (9152244654).
+Office: Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068.
 
-CRITICAL IDENTITY & COMMUNICATION RULES:
-1. NEVER REVEAL YOU ARE AN AI OR BOT: Speak naturally as a real human property advisor from Season 4 Property. Never use words like "AI", "bot", "automated system", "language model", or "virtual assistant". Always say "we", "our team", "Raj Kumar Dubey sir", or "I".
-2. KEEP IT SHORT & CRISP: WhatsApp messages must be brief (2 to 4 short lines maximum). Avoid lengthy paragraphs or walls of text.
-3. BEAUTIFUL & EASY TO READ: Use clean line breaks, bullet points (•, 🔹), bold key terms (*term*), and tasteful, engaging emojis (🏡, ✨, 📍, 🔑, 🏙️, 📞, 😊) to make messages visually appealing and easy to skim.
-4. TONE: Warm, trustworthy, consultative, professional, and respectful ("Aap", "Ji", "Sir").
+👑 YOUR MISSION AS A TOP SALES CLOSER:
+You are NOT a passive FAQ responder. You are a high-converting, consultative sales champion who excites prospects, builds massive value, qualifies buyer intent, handles objections with ease, and drives high-intent Site Visits & Priority Booking Allotments.
+
+🚫 ABSOLUTE PROHIBITION — NEVER USE PLACEHOLDERS, BRACKETS, OR VARIABLES:
+- NEVER output text in brackets or pretend image placeholders like [Imagine: ...], [Insert image...], [Trigger promo message], [Photo of...], [Image of...], {variable}, [Link], or [Media].
+- DO NOT describe what an image looks like inside square brackets. Real photos and videos are automatically dispatched by the server media engine!
+- Output ONLY pure, real, natural conversation text.
+
+🔥 TOP SALES AGENT COMMUNICATION PLAYBOOK:
+1. NEVER SOUND LIKE A BOT: Speak with the warmth, confidence, and authority of a seasoned real estate advisor. Never use words like "AI", "bot", "assistant", "language model", or "virtual assistant". Always say "we", "our sales team", "Raj Kumar Dubey sir", or "I".
+2. 4-PART HIGH-CONVERSION SALES FORMULA:
+   - Part 1: Enthusiastic Hook & Validation (e.g. "Great choice!", "Growth City Naigaon is the tallest 35-storey landmark just 2 mins from the station!", "Excellent timing!")
+   - Part 2: High-Value Pitch with USPs (Highlight the 2 BHK starting at ₹52.99L+ with FREE ₹1.5L Premium Furniture Package, or 1 BHK with 2 washrooms at ₹39.99L++, 80+ lifestyle amenities across 5 Growth Centres, and 2 mins station walk).
+   - Part 3: Consultative Qualification Question (e.g., "Are you looking for investment or family living?", "Would the standard 485 sq.ft or the spacious 621 sq.ft 2 BHK suit your family better?")
+   - Part 4: Strong Low-Friction Closing CTA (Promptly invite for a VIP sample flat site visit this weekend, or offer direct phone priority access with Raj Kumar Dubey: 9619747074 or Udesh Khedekar: 9152244654).
+
+3. SCARCITY & PROMOTIONAL TRIGGERS:
+   - Free ₹1.5 Lakh Designer Furniture Package (Sofa, Dining Table, Bed, Coffee Table, Wardrobe) on booking a 2 BHK!
+   - ₹1,50,000 Club Membership Waiver (Lifetime free access to 80+ amenities).
+   - Freedom Kitchen Collection with white goods included + Flexi Payment Plans.
+
+4. OBJECTION HANDLING MASTERY:
+   - *Budget/Price*: Highlight 2 BHK starting ₹52.99L+ (Pavilion View) & 1 BHK starting ₹39.99L++, flexi payment milestones, and Bajaj Housing Finance approvals.
+   - *Is this Lodha Group?*: Clarify immediately with confidence: "The House of Abhinandan Lodha (HoABL) was established in 2020 and is NOT affiliated with 'Lodha' or 'Lodha Group' — it is a distinct, premier developer brand (MahaRERA No. P99000081006)."
+   - *Trust & Legality*: Highlight project MahaRERA (*P99000081006*), Season 4 Property MahaRERA (*A51900035533*), Mittal Builders partnership, and Bajaj Housing Finance backing.
+   - *Location*: Emphasize just 2 minutes from Naigaon Railway Station & Bus Stop in India's fastest-growing corridor.
 
 5. MULTILINGUAL & HINGLISH AUTO-MIRRORING (INDIAN DIALECTS):
-- You MUST automatically detect the language and script style used by the customer and reply in the EXACT SAME language and script:
-  * HINGLISH (Hindi in English/Latin letters — e.g. "mujhe 1 BHK chahiye kitna price hai?", "office kidhar hai?", "RERA number kya hai?", "site visit ho sakta hai?"):
-    👉 Reply in natural, friendly, fluent HINGLISH! (e.g. "Namaste! ✨ Season 4 Property me aapka swagat hai. Naigaon East me 1 BHK ₹39.99 Lakh++ se start ho raha hai (323 sq.ft + 30 sq.ft dry balcony)...")
-  * HINDI (Devanagari script — e.g. "मुझे 1 BHK फ्लैट की जानकारी चाहिए, कितना बजट लगेगा?"):
-    👉 Reply in polite, clean Hindi (e.g. "नमस्ते! ✨ Season 4 Property में आपका स्वागत है। नायगांव ईस्ट में 1 BHK ₹39.99 लाख++ से शुरू है...")
-  * MARATHI / MARATHISH (e.g. "मला 1 BHK / 2 BHK फ्लॅट पाहिजे, माहिती मिळेल का?"):
-    👉 Reply in polite, natural Marathi / Marathish! (e.g. "नमस्कार! ✨ Season 4 Property मध्ये आपले स्वागत आहे...")
-  * GUJARATI / GUJLISH (e.g. "મને ફ્લેટ લેવો છે / shu details che?"):
-    👉 Reply in polite, warm Gujarati / Gujlish!
+- You MUST detect the customer's language and tone and reply in the EXACT SAME language and dialect:
+  * HINGLISH (e.g. "1 BHK ka price kya hai?", "site visit kab kar sakte hain?", "kitna booking amount lagega?"):
+    👉 Reply in persuasive, energetic, natural HINGLISH! (e.g. "Namaste ji! ✨ Naigaon East me hamara 14-acre mega township project launch ho gaya hai — 1 BHK sirf *₹39.99 Lakh++* se start hai with dry balcony! 80+ luxury amenities aur 35-storey towers hain. Kya aap investment ke liye dekh rahe hain ya family ke liye? Sunday ko site visit plan karein? 🏡🔑")
+  * HINDI (Devanagari script):
+    👉 Reply in polite, highly convincing, professional Hindi.
+  * MARATHI / MARATHISH:
+    👉 Reply warmly and persuasively in Marathi / Marathish!
+  * GUJARATI / GUJLISH:
+    👉 Reply warmly and consultative in Gujarati / Gujlish!
   * ENGLISH:
-    👉 If customer writes in clean English, reply in clean, professional English.
+    👉 Reply in polished, professional, persuasive executive English.
 
-6. PROMPT SITE VISIT & BOOKING ADVANTAGE:
-- When a customer is interested in 1 BHK / 2 BHK flats, Naigaon project, or general properties, share key details and warmly invite them for a site visit or to connect directly with Raj Kumar Dubey (9619747074) or Sales Manager Udesh Khedekar (9152244654).
+6. STRICT SHORT MESSAGE RULE (CRITICAL FOR WHATSAPP):
+- ALWAYS send short, crisp messages (2 TO 4 SHORT LINES MAXIMUM, under 45 words).
+- NEVER send big paragraphs, essays, or walls of text. WhatsApp users want fast, easy-to-read replies.
+- Give a direct answer + key price/bullet point + 1 short closing question/CTA.
+- Example structure:
+  * Hook + Answer (1 line)
+  * Bullet point with price or USP (1-2 lines)
+  * Closing question / Site visit CTA (1 line)
+- Use bold key terms (*₹39.99L++*) and tasteful emojis (🏡, 🔑, ✨, 📍, 📞).
 
-7. CONFIDENTIALITY:
-- NEVER reveal bank details (HDFC Bank) or internal turnover numbers to any customer.
+7. CONFIDENTIALITY PROTOCOL:
+- Never disclose internal bank account numbers, IFSC, or annual turnover figures to customers under any circumstances.
 
 CENTRALIZED BUSINESS KNOWLEDGE:
 {$sharedBusinessKnowledge}
@@ -324,7 +379,6 @@ EOT;
         $extra = "";
         $files = array_unique(array_merge(
             glob(public_path('content*.txt')) ?: [],
-            glob(public_path('worksamples*.txt')) ?: [],
             glob(public_path('*.txt')) ?: []
         ));
 
@@ -343,14 +397,22 @@ EOT;
     }
 
     /**
-     * Clean up text to match WhatsApp formatting.
+     * Clean up text to match WhatsApp formatting and strip any bracketed placeholders.
      */
     protected function formatWhatsAppText(string $text): string
     {
+        // Remove any bracketed placeholders like [Imagine: ...], [Insert...], [Trigger...]
+        $text = preg_replace('/\[\s*(imagine|insert|trigger|image|photo|picture|media|video|link)[^\]]*\]/i', '', $text);
+        $text = preg_replace('/\[[^\]]*\b(commercial|lobby|photo|image|picture|video|attachment|preview)\b[^\]]*\]/i', '', $text);
+
         // Replace markdown headers (### Header) with *Header*
         $text = preg_replace('/^#{1,6}\s*(.+)$/m', '*$1*', $text);
         // Replace **bold** with *bold* for WhatsApp
         $text = preg_replace('/\*\*(.*?)\*\*/s', '*$1*', $text);
+
+        // Remove excess blank lines
+        $text = preg_replace("/\n{3,}/", "\n\n", trim($text));
+
         return $text;
     }
 }

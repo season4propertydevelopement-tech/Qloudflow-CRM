@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded App Icon Background -->
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Top Highlight -->
+  <rect x="2" y="2" width="60" height="30" rx="14" fill="white" fill-opacity="0.1"/>
+
+  <!-- Cloud Flow Symbol with Shadow -->
+  <g filter="url(#glow)">
+    <path d="M44 38H20C16.6863 38 14 35.3137 14 32C14 28.9886 16.2235 26.4952 19.167 26.0645C19.7891 20.3705 24.6067 16 30.5 16C36.0028 16 40.5796 19.8038 41.619 24.9667C44.6293 25.4619 47 28.0931 47 31.3C47 34.9999 44.0001 38 44 38Z" 
+          fill="white" 
+          fill-opacity="0.95"/>
+    
+    <!-- Flow Dot Node -->
+    <circle cx="34" cy="46" r="3.5" fill="#10b981"/>
+    <circle cx="24" cy="46" r="2.5" fill="white" fill-opacity="0.9"/>
+    <circle cx="43" cy="46" r="2.5" fill="white" fill-opacity="0.9"/>
+    <path d="M26.5 46H30.5M37.5 46H40.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.7"/>
+  </g>
+</svg>

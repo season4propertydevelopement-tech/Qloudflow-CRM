@@ -13,7 +13,7 @@ class WhatsAppListenCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'whatsapp:listen {--interval=2 : Polling interval in seconds}';
+    protected $signature = 'whatsapp:listen {--interval=1 : Polling interval in seconds}';
 
     /**
      * The console command description.
@@ -41,11 +41,16 @@ class WhatsAppListenCommand extends Command
 
         while (true) {
             try {
-                $response = $apiService->getUnhandledMessages();
+                $sinceId = \Illuminate\Support\Facades\Cache::get('whatsapp_last_synced_message_id');
+                $response = $apiService->getUnhandledMessages($sinceId);
 
                 if (!empty($response['messages']) && is_array($response['messages'])) {
+                    $latestId = null;
                     foreach ($response['messages'] as $payload) {
                         $messageId = $payload['messageId'] ?? null;
+                        if ($messageId) {
+                            $latestId = $messageId;
+                        }
                         
                         // Check if already processed
                         if ($messageId && Message::where('external_message_id', $messageId)->exists()) {
@@ -62,6 +67,10 @@ class WhatsAppListenCommand extends Command
                         $webhookController->processIncomingMessage($payload, $apiService);
 
                         $this->line("<fg=cyan>[{$time}]</> 🤖 <fg=green>Auto-Reply Processed & Dispatched!</>\n");
+                    }
+
+                    if ($latestId) {
+                        \Illuminate\Support\Facades\Cache::forever('whatsapp_last_synced_message_id', $latestId);
                     }
                 }
             } catch (\Throwable $e) {

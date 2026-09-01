@@ -1,5 +1,6 @@
-<div
-    x-data="{
+<script>
+window.floatingBotTester = function() {
+    return {
         isOpen: false,
         isLoading: false,
         inputText: '',
@@ -10,9 +11,9 @@
             {
                 id: 1,
                 direction: 'bot',
-                text: '👋 *Welcome to Season 4 Property!* 🏡\n_Your Trusted Property Partner_\n\nHow can we assist your property search today?\n1️⃣ 🏢 *Ongoing Project (Naigaon East Township)*\n2️⃣ 📍 *Office & Contact Details*\n3️⃣ 📜 *MahaRERA & Legal Credentials*\n4️⃣ 🔑 *Book a Site Visit / Consultation*\n5️⃣ 👤 *Speak with Raj Kumar Dubey / Expert*\n\n_💬 Reply with a number (1–5) or type your query directly!_',
-                media_url: '{{ asset('media/wellcome-creativity.jpg') }}',
-                time: '{{ now()->format('h:i A') }}'
+                text: "👋 *Welcome to Season 4 Property!* 🏡\n_Official Channel Partner for Growth City Naigaon (The House of Abhinandan Lodha)_\n\nHow can we assist your property search today?\n\n1️⃣ 🏢 *Growth City Naigaon (2 BHK Premium Homes)*\n2️⃣ 🎁 *Exclusive Offers & Free ₹1.5L Furniture Package*\n3️⃣ 📍 *Prime Location & 2-Min Station Connectivity*\n4️⃣ 🔑 *Book VIP Site Visit / Sample Flat Tour*\n5️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n\n_💬 Reply with a number (1–5) or type your query directly!_",
+                media_url: '{{ asset("media/wellcome-creativity.jpg") }}',
+                time: '{{ now()->format("h:i A") }}'
             }
         ],
         toggleChat() {
@@ -37,7 +38,7 @@
             this.isLoading = true;
             this.$nextTick(() => this.scrollToBottom());
 
-            fetch('{{ route('bot.test') }}', {
+            fetch('{{ route("bot.test") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -83,7 +84,7 @@
             });
         },
         resetChat() {
-            fetch('{{ route('bot.test.reset') }}', {
+            fetch('{{ route("bot.test.reset") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -109,7 +110,6 @@
         },
         formatText(text) {
             if (!text) return '';
-            // Basic formatting for WhatsApp style *bold*, _italic_, ~strike~
             let formatted = text
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -123,34 +123,52 @@
             if (!url) return '';
             return url.startsWith('http') ? url : (url.startsWith('/') ? url : '/' + url);
         },
+        isVideo(url) {
+            if (!url) return false;
+            return url.toLowerCase().includes('.mp4') || url.toLowerCase().includes('.webm');
+        },
         scrollToBottom() {
             if (this.$refs.chatContainer) {
                 this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight;
             }
         }
-    }"
-    class="fixed bottom-6 right-6 z-50 select-none font-sans"
+    };
+};
+</script>
+
+<div
+    x-data="floatingBotTester()"
+    class="fixed select-none font-sans"
+    style="position: fixed !important; bottom: 24px !important; right: 24px !important; left: auto !important; top: auto !important; z-index: 99999 !important;"
 >
     <!-- Floating Trigger Launcher Pill -->
     <div x-show="!isOpen" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-4 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100">
         <button
             type="button"
             @click="toggleChat()"
-            class="group flex items-center gap-3 bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white pl-4 pr-5 py-3 rounded-full shadow-2xl hover:shadow-emerald-500/30 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 border-2 border-white/20 cursor-pointer"
+            class="group flex items-center gap-3 bg-[#075e54] hover:bg-[#128c7e] text-white pl-3.5 pr-4 py-2.5 rounded-full shadow-2xl hover:shadow-emerald-900/40 border border-emerald-400/30 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
         >
-            <div class="relative">
-                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
+            <!-- WhatsApp Icon Circle with Embedded Online Indicator -->
+            <div class="relative flex items-center justify-center shrink-0">
+                <div class="w-9 h-9 rounded-full bg-emerald-800/80 flex items-center justify-center text-white shadow-inner">
                     <i class="fa-brands fa-whatsapp text-lg"></i>
                 </div>
-                <span class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-emerald-700 animate-pulse"></span>
+                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#075e54] rounded-full"></span>
             </div>
-            <div class="text-left">
-                <p class="text-xs font-black tracking-tight leading-tight">Test WhatsApp AI Bot</p>
-                <p class="text-[10px] text-emerald-100/90 font-medium">Live Simulator & NLP Tester</p>
+
+            <!-- Text Description -->
+            <div class="text-left leading-tight">
+                <p class="text-xs font-bold tracking-tight text-white">Test WhatsApp Bot</p>
+                <p class="text-[10px] text-emerald-200 font-medium flex items-center gap-1.5 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Live Simulator</span>
+                </p>
             </div>
-            <span class="w-6 h-6 rounded-full bg-white/15 group-hover:bg-white/25 flex items-center justify-center ml-1 transition">
-                <i class="fa-solid fa-chevron-up text-[10px] text-emerald-100"></i>
-            </span>
+
+            <!-- Up Chevron Indicator -->
+            <div class="w-6 h-6 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center ml-1 text-emerald-100 transition-colors">
+                <i class="fa-solid fa-chevron-up text-[10px]"></i>
+            </div>
         </button>
     </div>
 
@@ -233,8 +251,13 @@
                         <div class="flex items-start gap-2 max-w-[85%]">
                             <div class="bg-white text-slate-800 p-2.5 rounded-2xl rounded-tl-none shadow-xs border border-slate-200/60 text-xs leading-relaxed break-words">
                                 <template x-if="msg.media_url">
-                                    <div class="mb-2 rounded-xl overflow-hidden border border-slate-200/80 bg-slate-100 shadow-2xs">
-                                        <img :src="getMediaUrl(msg.media_url)" alt="Welcome Creative" class="w-full h-auto max-h-44 object-cover rounded-xl transition duration-300 hover:scale-[1.02]">
+                                    <div class="mb-2 rounded-xl overflow-hidden border border-slate-200/80 bg-slate-900 shadow-2xs">
+                                        <template x-if="isVideo(msg.media_url)">
+                                            <video :src="getMediaUrl(msg.media_url)" controls class="w-full h-auto max-h-48 rounded-xl bg-black" playsinline></video>
+                                        </template>
+                                        <template x-if="!isVideo(msg.media_url)">
+                                            <img :src="getMediaUrl(msg.media_url)" alt="Season 4 Media" class="w-full h-auto max-h-44 object-cover rounded-xl transition duration-300 hover:scale-[1.02]">
+                                        </template>
                                     </div>
                                 </template>
                                 <div x-html="formatText(msg.text)" class="whitespace-pre-wrap px-1"></div>

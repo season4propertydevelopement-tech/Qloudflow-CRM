@@ -61,6 +61,12 @@ class WebhookController extends Controller
             || str_ends_with($rawJid, '@g.us') 
             || str_contains($rawJid, '@g.us') 
             || !empty($payload['groupId']);
+
+        // Never import or create CRM contacts/conversations for WhatsApp Groups
+        if ($isGroup) {
+            return;
+        }
+
         $extractedDigits = preg_replace('/[^0-9]/', '', str_replace(['@s.whatsapp.net', '@c.us', '@lid', '@g.us'], '', $rawJid)) ?: $rawJid;
         $phone = $realPhone ?: $extractedDigits;
         $messageText = $payload['message'] ?? '';

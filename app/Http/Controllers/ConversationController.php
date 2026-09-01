@@ -30,7 +30,12 @@ class ConversationController extends Controller
 
         $messageText = $request->input('message');
         $contact = $conversation->contact;
-        $recipient = $contact->whatsapp_id ?: $contact->phone;
+        $cleanPhone = preg_replace('/\D/', '', $contact->phone ?? '');
+        if (!empty($cleanPhone) && strlen($cleanPhone) >= 10 && strlen($cleanPhone) <= 14) {
+            $recipient = $cleanPhone;
+        } else {
+            $recipient = $contact->phone ?: $contact->whatsapp_id;
+        }
         
         // Send via WhatsApp API
         $response = $apiService->sendMessage($recipient, $messageText);
@@ -90,5 +95,21 @@ class ConversationController extends Controller
         }
 
         return back()->with('success', "Chatbot {$status} for {$contact->name}.");
+    }
+
+    public function destroy(Request $request, Conversation $conversation)
+    {
+        // Delete all associated messages first
+        $conversation->messages()->delete();
+        $conversation->delete();
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Conversation and messages deleted successfully.'
+            ]);
+        }
+
+        return redirect()->route('conversations.index')->with('success', 'Conversation deleted successfully.');
     }
 }

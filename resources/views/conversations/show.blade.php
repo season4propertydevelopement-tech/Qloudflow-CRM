@@ -134,6 +134,20 @@
                 
                 <span x-text="botEnabled ? 'Bot ON' : 'Bot Paused'"></span>
             </button>
+
+            <!-- Delete Conversation Button -->
+            <form action="{{ route('conversations.destroy', $conversation) }}" method="POST" class="inline shrink-0" onsubmit="return confirm('Are you sure you want to delete this conversation and all its messages?');">
+                @csrf
+                @method('DELETE')
+                <button
+                    type="submit"
+                    class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 hover:border-red-300 cursor-pointer select-none shadow-2xs"
+                    title="Delete this conversation thread"
+                >
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                    <span class="hidden sm:inline">Delete</span>
+                </button>
+            </form>
         </div>
     </div>
 
@@ -168,10 +182,18 @@
                     </div>
                     <div class="bg-white border border-slate-200 text-slate-800 p-3 sm:p-3.5 rounded-2xl rounded-tl-none shadow-xs min-w-0">
                         @if($msg->media_url)
-                            <div class="mb-2 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
-                                <a href="{{ asset(ltrim($msg->media_url, '/')) }}" target="_blank" class="block group relative">
-                                    <img src="{{ asset(ltrim($msg->media_url, '/')) }}" alt="Attached Media" class="w-full max-h-48 sm:max-h-60 object-cover rounded-xl group-hover:opacity-95 transition">
-                                </a>
+                            @php
+                                $mediaPath = ltrim($msg->media_url, '/');
+                                $isVideo = str_ends_with(strtolower($mediaPath), '.mp4') || str_ends_with(strtolower($mediaPath), '.webm');
+                            @endphp
+                            <div class="mb-2 rounded-xl overflow-hidden border border-slate-200 bg-slate-900">
+                                @if($isVideo)
+                                    <video src="{{ asset($mediaPath) }}" controls class="w-full max-h-48 sm:max-h-60 rounded-xl bg-black" playsinline></video>
+                                @else
+                                    <a href="{{ asset($mediaPath) }}" target="_blank" class="block group relative">
+                                        <img src="{{ asset($mediaPath) }}" alt="Attached Media" class="w-full max-h-48 sm:max-h-60 object-cover rounded-xl group-hover:opacity-95 transition">
+                                    </a>
+                                @endif
                             </div>
                         @endif
                         <p class="text-xs sm:text-sm font-medium whitespace-pre-wrap break-words leading-relaxed">{{ $msg->message }}</p>
@@ -186,13 +208,21 @@
                 <div class="flex items-start justify-end gap-2 sm:gap-2.5 max-w-[88%] sm:max-w-[78%] md:max-w-xl ml-auto">
                     <div class="{{ $msg->is_bot_message ? 'bg-emerald-700' : 'bg-indigo-600' }} text-white p-3 sm:p-3.5 rounded-2xl rounded-tr-none shadow-xs min-w-0">
                         @if($msg->media_url)
-                            <div class="mb-2 rounded-xl overflow-hidden border border-white/20 bg-black/10">
-                                <a href="{{ asset(ltrim($msg->media_url, '/')) }}" target="_blank" class="block group relative">
-                                    <img src="{{ asset(ltrim($msg->media_url, '/')) }}" alt="Attached Media" class="w-full max-h-48 sm:max-h-60 object-cover rounded-xl group-hover:opacity-95 transition">
-                                    <div class="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] sm:text-[10px] px-2 py-0.5 rounded-md backdrop-blur-xs flex items-center gap-1 font-semibold">
-                                        <i class="fa-solid fa-expand text-[9px]"></i> View Full
-                                    </div>
-                                </a>
+                            @php
+                                $mediaPath = ltrim($msg->media_url, '/');
+                                $isVideo = str_ends_with(strtolower($mediaPath), '.mp4') || str_ends_with(strtolower($mediaPath), '.webm');
+                            @endphp
+                            <div class="mb-2 rounded-xl overflow-hidden border border-white/20 bg-black/40">
+                                @if($isVideo)
+                                    <video src="{{ asset($mediaPath) }}" controls class="w-full max-h-48 sm:max-h-60 rounded-xl bg-black" playsinline></video>
+                                @else
+                                    <a href="{{ asset($mediaPath) }}" target="_blank" class="block group relative">
+                                        <img src="{{ asset($mediaPath) }}" alt="Attached Media" class="w-full max-h-48 sm:max-h-60 object-cover rounded-xl group-hover:opacity-95 transition">
+                                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] sm:text-[10px] px-2 py-0.5 rounded-md backdrop-blur-xs flex items-center gap-1 font-semibold">
+                                            <i class="fa-solid fa-expand text-[9px]"></i> View Full
+                                        </div>
+                                    </a>
+                                @endif
                             </div>
                         @endif
                         <p class="text-xs sm:text-sm font-medium whitespace-pre-wrap break-words leading-relaxed">{{ $msg->message }}</p>

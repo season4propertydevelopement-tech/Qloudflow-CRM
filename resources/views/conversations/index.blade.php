@@ -121,6 +121,19 @@
                                 <span>{{ $conversation->contact->chatbot_enabled ? 'Disable Bot' : 'Enable Bot' }}</span>
                             </button>
                         </form>
+
+                        <!-- Delete Conversation Button -->
+                        <form action="{{ route('conversations.destroy', $conversation) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this conversation?');">
+                            @csrf
+                            @method('DELETE')
+                            <button
+                                type="submit"
+                                class="p-1.5 sm:p-2 text-red-600 hover:text-red-800 hover:bg-red-50 active:bg-red-100 rounded-xl transition cursor-pointer border border-transparent hover:border-red-200"
+                                title="Delete Conversation"
+                            >
+                                <i class="fa-solid fa-trash-can text-xs sm:text-sm"></i>
+                            </button>
+                        </form>
                     </div>
                 </li>
             @empty

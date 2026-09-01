@@ -127,27 +127,7 @@ class Contact extends Model
             return;
         }
 
-        // Try AI Classification across full conversation history
-        try {
-            $geminiService = app(\App\Services\GeminiService::class);
-            $historyArray = $messages->map(fn($m) => [
-                'direction' => $m->direction,
-                'message' => $m->message,
-            ])->toArray();
-
-            $aiResult = $geminiService->classifyLeadFromHistory($historyArray);
-            if ($aiResult && isset($aiResult['status']) && in_array($aiResult['status'], ['hot', 'warm', 'cold'])) {
-                $this->lead_status = $aiResult['status'];
-                $this->lead_score = $aiResult['score'] ?? ($aiResult['status'] === 'hot' ? 90 : ($aiResult['status'] === 'warm' ? 55 : 15));
-                if (!empty($aiResult['reason'])) {
-                    $this->notes = "AI Lead Assessment: " . $aiResult['reason'];
-                }
-                $this->save();
-                return;
-            }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("AI lead classification failed: " . $e->getMessage());
-        }
+        // Instant Real-Time Heuristic Scoring (Sub-millisecond execution)
 
         // Comprehensive NLP & Intent Analysis over cumulative text
         $incomingMessages = $messages->where('direction', 'incoming')->pluck('message')->toArray();
@@ -158,11 +138,11 @@ class Contact extends Model
             '1bhk', '2bhk', '1 bhk', '2 bhk', '3bhk', 'flat', 'apartment', 'residence',
             'buy', 'purchase', 'booking', 'book', 'schedule', 'site visit', 'visit',
             'call me', 'talk to', 'contact number', 'phone number', 'meet',
-            'naigaon', 'dahisar', 'bhayandar', 'budget', 'down payment', 'emi', 'loan',
-            'how much', 'eoi', 'priority'
+            'budget', 'down payment', 'emi', 'loan', 'how much', 'eoi', 'priority'
         ];
 
         $warmSignals = [
+            'naigaon', 'dahisar', 'bhayandar',
             'property', 'real estate', 'rera', 'amenities', 'tower', 'project', 'location',
             'possession', 'carpet area', 'sqft', 'sq.ft', 'details', 'information', 'about',
             'sample flat', 'brochure', 'floor plan', 'raj kumar', 'dubey', 'sai krupa', 'office'

@@ -30,11 +30,16 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Contacts Import / Export
+    Route::get('contacts/export', [ContactController::class, 'export'])->name('contacts.export');
+    Route::get('contacts/template', [ContactController::class, 'downloadTemplate'])->name('contacts.template');
+    Route::post('contacts/import', [ContactController::class, 'import'])->name('contacts.import');
+
     Route::resource('contacts', ContactController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::post('contacts/{contact}/toggle-bot', [ContactController::class, 'toggleBot'])->name('contacts.toggle-bot');
     Route::post('contacts/{contact}/set-lead-status', [ContactController::class, 'setLeadStatus'])->name('contacts.set-lead-status');
 
-    Route::resource('conversations', ConversationController::class)->only(['index', 'show']);
+    Route::resource('conversations', ConversationController::class)->only(['index', 'show', 'destroy']);
     Route::post('conversations/{conversation}/reply', [ConversationController::class, 'reply'])->name('conversations.reply');
     Route::post('conversations/{conversation}/toggle-bot', [ConversationController::class, 'toggleBot'])->name('conversations.toggle-bot');
 
