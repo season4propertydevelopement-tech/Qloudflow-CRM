@@ -36,7 +36,7 @@
             this.autoLeadScoring = true;
             this.humanHandoffEnabled = true;
             this.humanKeywords = 'human, agent, talk to an expert, representative, live support, consultant, call';
-            this.outOfHoursMessage = '🌙 *Thank you for reaching out to Season 4 Property!* 🏡\n\nOur team is currently outside standard business hours (Mon-Sat, 9:00 AM - 8:00 PM).\n\nWe have recorded your inquiry and Raj Kumar Dubey / our property advisor will connect with you first thing in the morning.\n\n_💬 Feel free to leave your property requirements, budget, or preferred location here in the meantime._';
+            this.outOfHoursMessage = '🌙 *Thank you for reaching out to The House of Abhinandan Lodha!* 🏡\n\nOur team is currently outside standard business hours (Mon-Sat, 9:00 AM - 8:00 PM).\n\nWe have recorded your inquiry and our property advisor will connect with you first thing in the morning.\n\n_💬 Feel free to leave your property requirements, budget, or preferred location here in the meantime._';
         }
     }
 }">
@@ -92,7 +92,7 @@
                         <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full" :class="isEnabled ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-600'" x-text="isEnabled ? 'ENABLED' : 'PAUSED'"></span>
                     </div>
                     <p class="text-xs text-slate-500 leading-relaxed max-w-xl">
-                        When enabled, incoming customer messages will receive smart AI replies based on your Season 4 Property knowledge base, ongoing projects, and lead routing.
+                        When enabled, incoming customer messages will receive smart AI replies based on your Abhinandan Lodha knowledge base, ongoing projects, and lead routing.
                     </p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer shrink-0">

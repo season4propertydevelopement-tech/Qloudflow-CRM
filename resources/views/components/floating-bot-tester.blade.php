@@ -11,7 +11,7 @@ window.floatingBotTester = function() {
             {
                 id: 1,
                 direction: 'bot',
-                text: "👋 *Welcome to Season 4 Property!* 🏡\n_Official Channel Partner for Growth City Naigaon (The House of Abhinandan Lodha)_\n\nHow can we assist your property search today?\n\n1️⃣ 🏢 *Growth City Naigaon (2 BHK Premium Homes)*\n2️⃣ 🎁 *Exclusive Offers & Free ₹1.5L Furniture Package*\n3️⃣ 📍 *Prime Location & 2-Min Station Connectivity*\n4️⃣ 🔑 *Book VIP Site Visit / Sample Flat Tour*\n5️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n\n_💬 Reply with a number (1–5) or type your query directly!_",
+                text: "👋 *Welcome to The House of Abhinandan Lodha!* 🏡\n_Premium Developments & Growth City Naigaon_\n\nHow can we assist your property search today?\n\n1️⃣ 🏢 *Growth City Naigaon (2 BHK Premium Homes)*\n2️⃣ 🎁 *Exclusive Offers & Free ₹1.5L Furniture Package*\n3️⃣ 📍 *Prime Location & 2-Min Station Connectivity*\n4️⃣ 🔑 *Book VIP Site Visit / Sample Flat Tour*\n5️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n\n_💬 Reply with a number (1–5) or type your query directly!_",
                 media_url: '{{ asset("media/wellcome-creativity.jpg") }}',
                 time: '{{ now()->format("h:i A") }}'
             }
@@ -101,7 +101,7 @@ window.floatingBotTester = function() {
                     {
                         id: Date.now(),
                         direction: 'bot',
-                        text: data.welcome_message || '👋 *Welcome to Season 4 Property!* 🏡\n\nHow can we assist your property search today?',
+                        text: data.welcome_message || '👋 *Welcome to The House of Abhinandan Lodha!* 🏡\n\nHow can we assist your property search today?',
                         media_url: data.media_url || null,
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     }
@@ -195,7 +195,7 @@ window.floatingBotTester = function() {
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h4 class="font-black text-sm text-white tracking-tight">Season 4 Property</h4>
+                        <h4 class="font-black text-sm text-white tracking-tight">Abhinandan Lodha</h4>
                         <!-- Dynamic Lead Temperature Badge -->
                         <span
                             class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-2xs"
@@ -256,7 +256,7 @@ window.floatingBotTester = function() {
                                             <video :src="getMediaUrl(msg.media_url)" controls class="w-full h-auto max-h-48 rounded-xl bg-black" playsinline></video>
                                         </template>
                                         <template x-if="!isVideo(msg.media_url)">
-                                            <img :src="getMediaUrl(msg.media_url)" alt="Season 4 Media" class="w-full h-auto max-h-44 object-cover rounded-xl transition duration-300 hover:scale-[1.02]">
+                                            <img :src="getMediaUrl(msg.media_url)" alt="Abhinandan Lodha Media" class="w-full h-auto max-h-44 object-cover rounded-xl transition duration-300 hover:scale-[1.02]">
                                         </template>
                                     </div>
                                 </template>

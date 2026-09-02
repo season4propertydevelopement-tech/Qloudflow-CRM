@@ -22,7 +22,7 @@ class BotSettingsService
             'start_time' => '09:00',
             'end_time' => '20:00',
             'active_days' => ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
-            'out_of_hours_message' => "🌙 *Thank you for reaching out to Season 4 Property!* 🏡\n\nOur team is currently outside standard business hours (Mon-Sat, 9:00 AM - 8:00 PM).\n\nWe have recorded your inquiry and Raj Kumar Dubey / our property advisor will connect with you first thing in the morning.\n\n_💬 Feel free to leave your property requirements, budget, or preferred location here in the meantime._",
+            'out_of_hours_message' => "🌙 *Thank you for reaching out to The House of Abhinandan Lodha!* 🏡\n\nOur team is currently outside standard business hours (Mon-Sat, 9:00 AM - 8:00 PM).\n\nWe have recorded your inquiry and our property advisor will connect with you first thing in the morning.\n\n_💬 Feel free to leave your property requirements, budget, or preferred location here in the meantime._",
             'send_welcome_media' => true,
             'auto_lead_scoring' => true,
             'human_handoff_enabled' => true,

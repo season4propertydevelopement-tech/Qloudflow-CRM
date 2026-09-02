@@ -57,7 +57,7 @@ class ContactController extends Controller
         }
 
         $contacts = $query->latest('id')->get();
-        $filename = 'Season4_Contacts_Export_' . now()->format('Y-m-d_His') . '.xlsx';
+        $filename = 'Abhinandan_Lodha_Contacts_Export_' . now()->format('Y-m-d_His') . '.xlsx';
 
         // Build Excel data array
         $rows = [

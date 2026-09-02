@@ -205,7 +205,7 @@ class AuthTest extends TestCase
 
         // Add 5 conversation messages
         \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Hello there']);
-        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'Welcome to Season 4 Property!']);
+        \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => 'Welcome to The House of Abhinandan Lodha!']);
         \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'I want to know the 2 BHK flat pricing and booking amount']);
         \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'outgoing', 'message' => '2 BHK starts at ₹52.99L++ with 80+ luxury amenities.']);
         \App\Models\Message::create(['conversation_id' => $conv->id, 'contact_id' => $contact->id, 'direction' => 'incoming', 'message' => 'Please schedule a site visit this Sunday for booking and call me']);
@@ -256,7 +256,7 @@ class AuthTest extends TestCase
             'current_node',
         ]);
         $this->assertTrue($response->json('success'));
-        $this->assertStringContainsString('Season 4 Property', $response->json('reply'));
+        $this->assertStringContainsString('Abhinandan Lodha', $response->json('reply'));
     }
 
     public function test_can_reset_bot_sandbox_session(): void

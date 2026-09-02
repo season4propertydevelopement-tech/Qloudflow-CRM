@@ -8,6 +8,8 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BotTestController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\MetaCampaignController;
+use App\Http\Controllers\MetaTemplateController;
 
 // Public Shareable Video Watch & Download Routes
 Route::get('/watch/{slug}', [VideoController::class, 'watch'])->name('video.watch');
@@ -62,4 +64,31 @@ Route::middleware('auth')->group(function () {
     // Chatbot Simulator & Live Sandbox Testing Routes
     Route::post('/bot/test', [BotTestController::class, 'simulateMessage'])->name('bot.test');
     Route::post('/bot/test/reset', [BotTestController::class, 'resetSession'])->name('bot.test.reset');
+
+    // Meta Leads & WhatsApp Automation Routes
+    Route::prefix('meta-leads')->name('meta-leads.')->group(function () {
+        Route::get('/automation', [MetaCampaignController::class, 'index'])->name('automation');
+        Route::post('/campaigns', [MetaCampaignController::class, 'store'])->name('campaigns.store');
+        Route::post('/campaigns/preview-sheet', [MetaCampaignController::class, 'previewSheet'])->name('campaigns.preview-sheet');
+        Route::get('/campaigns/{campaign}', [MetaCampaignController::class, 'show'])->name('campaigns.show');
+        Route::put('/campaigns/{campaign}', [MetaCampaignController::class, 'update'])->name('campaigns.update');
+        Route::delete('/campaigns/{campaign}', [MetaCampaignController::class, 'destroy'])->name('campaigns.destroy');
+        Route::post('/campaigns/{campaign}/sync', [MetaCampaignController::class, 'syncSheet'])->name('campaigns.sync');
+
+        // Bulk & Single Dispatch
+        Route::post('/campaigns/{campaign}/send-email', [MetaCampaignController::class, 'sendBulkEmail'])->name('campaigns.send-email');
+        Route::post('/campaigns/{campaign}/send-whatsapp', [MetaCampaignController::class, 'sendBulkWhatsApp'])->name('campaigns.send-whatsapp');
+        Route::post('/campaigns/{campaign}/leads/{lead}/send-single-email', [MetaCampaignController::class, 'sendSingleEmail'])->name('campaigns.leads.send-email');
+        Route::post('/campaigns/{campaign}/leads/{lead}/send-single-whatsapp', [MetaCampaignController::class, 'sendSingleWhatsApp'])->name('campaigns.leads.send-whatsapp');
+
+        // Templates Management
+        Route::get('/templates', [MetaTemplateController::class, 'index'])->name('templates.index');
+        Route::post('/templates', [MetaTemplateController::class, 'store'])->name('templates.store');
+        Route::post('/templates/upload-image', [MetaTemplateController::class, 'uploadImage'])->name('templates.upload-image');
+        Route::post('/templates/test-whatsapp', [MetaTemplateController::class, 'testWhatsApp'])->name('templates.test-whatsapp');
+        Route::post('/templates/test-email', [MetaTemplateController::class, 'testEmail'])->name('templates.test-email');
+        Route::put('/templates/{template}', [MetaTemplateController::class, 'update'])->name('templates.update');
+        Route::delete('/templates/{template}', [MetaTemplateController::class, 'destroy'])->name('templates.destroy');
+        Route::get('/api/templates', [MetaTemplateController::class, 'apiList'])->name('api.templates');
+    });
 });

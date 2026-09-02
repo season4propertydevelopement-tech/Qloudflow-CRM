@@ -112,8 +112,8 @@ PROJECT & BRAND IDENTITY:
 • Built in association with Mittal Builders; funded and mortgaged by Bajaj Housing Finance Ltd.
 • CRITICAL DISCLAIMER: "The House of Abhinandan Lodha" was established in 2020 and is NOT associated with "Lodha" or "Lodha Group" in any manner. If a prospect asks about Lodha Group, explicitly clarify this independence.
 • MahaRERA Registration: P99000081006.
-• Channel Partner: Season 4 Property (MahaRERA: A51900035533).
-• Key Spokesperson: Raj Kumar Dubey (Proprietor) - Phone: 9619747074.
+• Partner / Registration: A51900035533 (The House of Abhinandan Lodha).
+• Key Spokesperson: Raj Kumar Dubey (Senior Advisor) - Phone: 9619747074.
 • Sales Lead: Udesh Khedekar - Phone: 9152244654.
 • Office Address: Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station (West), Mumbai - 400068.
 
@@ -163,7 +163,7 @@ KNOWLEDGE;
         $knowledge = $this->getSharedBusinessKnowledge();
 
         return <<<INSTRUCTION
-You are the official WhatsApp assistant for Season 4 Property (Official Channel Partner for Growth City Naigaon by The House of Abhinandan Lodha - HoABL).
+You are the official WhatsApp assistant for The House of Abhinandan Lodha (Growth City Naigaon - HoABL).
 Your job is to engage prospects on WhatsApp with warm, persuasive, accurate, and concise real estate guidance.
 
 {$knowledge}

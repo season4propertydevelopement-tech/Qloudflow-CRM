@@ -424,7 +424,7 @@ class ChatbotService
      */
     public function getWelcomeMessage(): string
     {
-        return "👋 *Welcome to Season 4 Property!* 🏡\n_Official Channel Partner for Growth City Naigaon (The House of Abhinandan Lodha)_\n\nHow can we assist your property search today?\n\n1️⃣ 🏢 *Growth City Naigaon (2 BHK Premium Homes)*\n2️⃣ 🎁 *Exclusive Offers & Free ₹1.5L Furniture Package*\n3️⃣ 📍 *Prime Location & 2-Min Station Connectivity*\n4️⃣ 🔑 *Book VIP Site Visit / Sample Flat Tour*\n5️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n\n_💬 Reply with a number (1–5) or type your query directly!_";
+        return "👋 *Welcome to The House of Abhinandan Lodha!* 🏡\n_Premium Developments & Growth City Naigaon_\n\nHow can we assist your property search today?\n\n1️⃣ 🏢 *Growth City Naigaon (2 BHK Premium Homes)*\n2️⃣ 🎁 *Exclusive Offers & Free ₹1.5L Furniture Package*\n3️⃣ 📍 *Prime Location & 2-Min Station Connectivity*\n4️⃣ 🔑 *Book VIP Site Visit / Sample Flat Tour*\n5️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n\n_💬 Reply with a number (1–5) or type your query directly!_";
     }
 
     public function getWelcomeMediaUrl(): string
@@ -442,7 +442,7 @@ class ChatbotService
      */
     protected function sendGrowthCityOverview(Contact $contact, Conversation $conversation)
     {
-        $reply = "🏢 *Growth City Naigaon — The House of Abhinandan Lodha*\n_Built in association with Mittal Builders | Financed by Bajaj Housing Finance_\n_Official Channel Partner: Season 4 Property (Raj Kumar Dubey 9619747074)_\n\n🌟 Tallest 35-storey towers in Naigaon with 80+ amenities across 5 Growth Centres.\n\n1️⃣ 🏡 *2 BHK Homes (485 & 621 sq.ft from ₹52.99L+)*\n2️⃣ 🎁 *Exclusive Offers & Free ₹1.5L Furniture Package*\n3️⃣ 🌟 *80+ Lifestyle Amenities & 5 Growth Centres*\n4️⃣ 🔑 *Book Guided VIP Site Visit*\n0️⃣ ↩️ *Main Menu*";
+        $reply = "🏢 *Growth City Naigaon — The House of Abhinandan Lodha*\n_Built in association with Mittal Builders | Financed by Bajaj Housing Finance_\n_Official Partner: The House of Abhinandan Lodha (9619747074)_\n\n🌟 Tallest 35-storey towers in Naigaon with 80+ amenities across 5 Growth Centres.\n\n1️⃣ 🏡 *2 BHK Homes (485 & 621 sq.ft from ₹52.99L+)*\n2️⃣ 🎁 *Exclusive Offers & Free ₹1.5L Furniture Package*\n3️⃣ 🌟 *80+ Lifestyle Amenities & 5 Growth Centres*\n4️⃣ 🔑 *Book Guided VIP Site Visit*\n0️⃣ ↩️ *Main Menu*";
         $this->sendReply($contact, $conversation, $reply, 'public-asset/tower-elevation-exterior-view.jpeg');
     }
 
@@ -600,7 +600,7 @@ class ChatbotService
      */
     protected function sendHumanContactDetails(Contact $contact, Conversation $conversation)
     {
-        $reply = "👤 *Direct Contact — Season 4 Property:*\n_Official Channel Partner for Growth City Naigaon (HoABL)_\n\n• *Raj Kumar Dubey (Proprietor):* 📞 *9619747074*\n• *Udesh Khedekar (Sales Lead):* 📞 *9152244654*\n• *Office Address:* Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station (West), Mumbai - 400068\n• *MahaRERA Registration:* A51900035533\n\n_Raj Kumar Dubey has been notified and will reach out to you shortly. Feel free to call directly anytime!_\n0️⃣ ↩️ *Main Menu*";
+        $reply = "👤 *Direct Contact — The House of Abhinandan Lodha:*\n_Growth City Naigaon (HoABL)_\n\n• *Senior Property Advisor:* 📞 *9619747074*\n• *Sales Lead:* 📞 *9152244654*\n• *Office Address:* Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station (West), Mumbai - 400068\n• *MahaRERA Registration:* A51900035533\n\n_Our advisor has been notified and will reach out to you shortly. Feel free to call directly anytime!_\n0️⃣ ↩️ *Main Menu*";
         $this->sendReply($contact, $conversation, $reply, 'public-asset/season4-property-visiting-card.jpeg');
     }
 
@@ -618,7 +618,7 @@ class ChatbotService
      */
     protected function sendReraDetails(Contact $contact, Conversation $conversation)
     {
-        $reply = "🏛️ *Official MahaRERA Verification:*\n• *Project MahaRERA:* P99000081006 (Growth City Naigaon)\n• *Channel Partner MahaRERA:* A51900035533 (Season 4 Property)\n• Completely clear titles, mortgaged with Bajaj Housing Finance Ltd.\n\n_Reply 1 to explore 2 BHK homes, or reply 4 to book a VIP site visit!_";
+        $reply = "🏛️ *Official MahaRERA Verification:*\n• *Project MahaRERA:* P99000081006 (Growth City Naigaon)\n• *Developer / Partner MahaRERA:* A51900035533 (The House of Abhinandan Lodha)\n• Completely clear titles, mortgaged with Bajaj Housing Finance Ltd.\n\n_Reply 1 to explore 2 BHK homes, or reply 4 to book a VIP site visit!_";
         $this->sendReply($contact, $conversation, $reply);
     }
 
@@ -627,7 +627,7 @@ class ChatbotService
      */
     protected function sendFallbackGuidance(Contact $contact, Conversation $conversation, string $currentState)
     {
-        $reply = "Thank you for reaching out to *Season 4 Property*! 🏡\n\nHere are the quickest ways we can assist you:\n1️⃣ 🏢 *Growth City Naigaon (2 BHK Premium Homes from ₹52.99L+)*\n2️⃣ 🎁 *Free ₹1.5L Furniture Package Offer*\n3️⃣ 📍 *Prime Location (2-Min from Naigaon Station)*\n4️⃣ 🔑 *Book VIP Site Visit / Sample Flat Tour*\n5️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n\n_💬 Reply with a number (1–5) or type 0 for Main Menu!_";
+        $reply = "Thank you for reaching out to *The House of Abhinandan Lodha*! 🏡\n\nHere are the quickest ways we can assist you:\n1️⃣ 🏢 *Growth City Naigaon (2 BHK Premium Homes from ₹52.99L+)*\n2️⃣ 🎁 *Free ₹1.5L Furniture Package Offer*\n3️⃣ 📍 *Prime Location (2-Min from Naigaon Station)*\n4️⃣ 🔑 *Book VIP Site Visit / Sample Flat Tour*\n5️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n\n_💬 Reply with a number (1–5) or type 0 for Main Menu!_";
         $this->sendReply($contact, $conversation, $reply);
     }
 

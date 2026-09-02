@@ -58,7 +58,7 @@ class VideoController extends Controller
         'elevation-tour' => [
             'slug' => 'elevation-tour',
             'title' => '35-Storey Tower Elevation & Sample Room Tour',
-            'description' => 'Experience the tallest 35-storey residential towers in Naigaon East with hill and pavilion views by HoABL & Season 4 Property.',
+            'description' => 'Experience the tallest 35-storey residential towers in Naigaon East with hill and pavilion views by The House of Abhinandan Lodha.',
             'filename' => 'video-elevation-sample-room-tour.mp4',
             'duration' => '0:50',
             'badge' => '35-Storey Towers',
@@ -115,13 +115,13 @@ class VideoController extends Controller
             return [
                 'slug' => str_replace('.mp4', '', $base),
                 'title' => ucwords(str_replace(['video-', '-', '_'], ' ', str_replace('.mp4', '', $base))),
-                'description' => 'Growth City Naigaon property presentation video by Season 4 Property.',
+                'description' => 'Growth City Naigaon property presentation video by The House of Abhinandan Lodha.',
                 'filename' => $base,
                 'duration' => 'Video',
                 'badge' => 'Video Presentation',
                 'poster' => 'public-asset/tower-elevation-exterior-view.jpeg',
                 'category' => 'Property Video',
-                'price_starting' => 'Season 4 Property',
+                'price_starting' => 'The House of Abhinandan Lodha',
             ];
         }
 

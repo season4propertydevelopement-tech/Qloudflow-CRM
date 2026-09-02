@@ -7,7 +7,7 @@ $kernel->bootstrap();
 
 $season4Data = [
     'company' => [
-        'name' => 'Season 4 Property',
+        'name' => 'The House of Abhinandan Lodha',
         'tagline' => 'Your Trusted Property Partner',
         'business_type' => 'Real Estate Services (Proprietary Firm)',
         'owner' => 'Raj Kumar Dubey (Shri Rajkumar Ramsagar Dubey)',
@@ -60,14 +60,14 @@ $knowledgePath = storage_path('app/season4_knowledge.json');
 file_put_contents($knowledgePath, json_encode($season4Data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 echo "Saved knowledge base to: {$knowledgePath}\n";
 
-// Generate Interactive WhatsApp Bot Flow for Season 4 Property
+// Generate Interactive WhatsApp Bot Flow for The House of Abhinandan Lodha
 $botFlow = [
     'start_node' => 'welcome_node',
     'nodes' => [
         [
             'id' => 'welcome_node',
             'name' => 'Welcome Menu',
-            'message' => "👋 *Welcome to Season 4 Property!* 🏡\n_Your Trusted Property Partner_\n\nHow can we assist your property search today?\n\n1️⃣ 🏢 *Ongoing Project (Naigaon East Township)*\n2️⃣ 📍 *Office & Contact Details*\n3️⃣ 📜 *MahaRERA & Legal Credentials*\n4️⃣ 🔑 *Book a Site Visit / Consultation*\n5️⃣ 👤 *Speak with Raj Kumar Dubey / Expert*\n\n_💬 Reply with a number (1–5) or type your query directly!_",
+            'message' => "👋 *Welcome to The House of Abhinandan Lodha!* 🏡\n_Your Trusted Property Partner_\n\nHow can we assist your property search today?\n\n1️⃣ 🏢 *Ongoing Project (Naigaon East Township)*\n2️⃣ 📍 *Office & Contact Details*\n3️⃣ 📜 *MahaRERA & Legal Credentials*\n4️⃣ 🔑 *Book a Site Visit / Consultation*\n5️⃣ 👤 *Speak with Raj Kumar Dubey / Expert*\n\n_💬 Reply with a number (1–5) or type your query directly!_",ith a number (1–5) or type your query directly!_",
             'options' => [
                 ['trigger' => '1', 'match_type' => 'exact', 'next_node' => 'project_node'],
                 ['trigger' => 'project', 'match_type' => 'contains', 'next_node' => 'project_node'],
@@ -114,7 +114,7 @@ $botFlow = [
         [
             'id' => 'contact_node',
             'name' => 'Office & Contact',
-            'message' => "📍 *Season 4 Property Office & Contact:*\n\n🏢 *Office Address:* Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068\n📞 *Call / WhatsApp:* 9619747074\n✉️ *Email:* rajkumardubey477@gmail.com\n👤 *Proprietor:* Raj Kumar Dubey\n\n_Reply *Menu* to return to the main options._",
+            'message' => "📍 *The House of Abhinandan Lodha Office & Contact:*\n\n🏢 *Office Address:* Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068\n📞 *Call / WhatsApp:* 9619747074\n✉️ *Email:* rajkumardubey477@gmail.com\n👤 *Proprietor:* Raj Kumar Dubey\n\n_Reply *Menu* to return to the main options._",
             'options' => [
                 ['trigger' => 'menu', 'match_type' => 'contains', 'next_node' => 'welcome_node'],
             ]
@@ -122,7 +122,7 @@ $botFlow = [
         [
             'id' => 'legal_node',
             'name' => 'Legal & RERA Credentials',
-            'message' => "📜 *Legal & Regulatory Credentials:*\n\n• 🏛️ *Maha RERA Number:* A51900035533\n• 📑 *MSME Udyam Reg. No.:* UDYAM-MH-33-0376504\n• 🆔 *PAN:* AKAPD4856H\n• 🏢 *Registered Enterprise:* Season 4 Property (Proprietary Firm)\n\n_100% verified, legal, and trusted property advisory._ ✨\n\n_Reply *Menu* to return to the main options._",
+            'message' => "📜 *Legal & Regulatory Credentials:*\n\n• 🏛️ *Maha RERA Number:* A51900035533\n• 📑 *MSME Udyam Reg. No.:* UDYAM-MH-33-0376504\n• 🆔 *PAN:* AKAPD4856H\n• 🏢 *Registered Enterprise:* The House of Abhinandan Lodha\n\n_100% verified, legal, and trusted property advisory._ ✨\n\n_Reply *Menu* to return to the main options._",
             'options' => [
                 ['trigger' => 'menu', 'match_type' => 'contains', 'next_node' => 'welcome_node'],
             ]
@@ -150,4 +150,4 @@ $flowPath = storage_path('app/bot_flow.json');
 file_put_contents($flowPath, json_encode($botFlow, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 echo "Saved bot flow to: {$flowPath}\n";
 
-echo "Season 4 Property Training & Knowledge Base Setup Completed Successfully!\n";
+echo "Abhinandan Lodha Training & Knowledge Base Setup Completed Successfully!\n";

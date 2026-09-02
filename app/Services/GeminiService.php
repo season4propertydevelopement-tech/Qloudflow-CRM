@@ -158,7 +158,7 @@ class GeminiService
         }
 
         $prompt = <<<EOT
-Analyze the following WhatsApp conversation between a Client and an Assistant for Season 4 Property (Real Estate Consultant for Mumbai & Naigaon East Township).
+Analyze the following WhatsApp conversation between a Client and an Assistant for The House of Abhinandan Lodha (Real Estate Consultant for Mumbai & Naigaon East Township).
 
 Conversation Transcript:
 {$transcript}
@@ -217,7 +217,7 @@ EOT;
     }
 
     /**
-     * Centralized Shared Business Knowledge Base for Season 4 Property (Retrained on Content3).
+     * Centralized Shared Business Knowledge Base for The House of Abhinandan Lodha.
      */
     public static function getSharedBusinessKnowledge(): string
     {
@@ -285,9 +285,9 @@ C) 2 BHK REIMAGINED (621 SQ. FT. LARGE VARIANT):
 - Just 2 minutes from Naigaon Railway Station & Bus Stop
 - Rapid connectivity to Western Express Highway, Mumbai, Dahisar, Borivali, and Thane
 
-7. CHANNEL PARTNER & CONTACT DETAILS:
-- Channel Partner: Season 4 Property — "Your Trusted Property Partner"
-- Proprietor: Raj Kumar Dubey (Full legal name: Shri Rajkumar Ramsagar Dubey)
+7. DEVELOPER & CONTACT DETAILS:
+- Brand / Project: The House of Abhinandan Lodha
+- Senior Property Advisor: Raj Kumar Dubey (Phone: 9619747074)
 - Mobile / WhatsApp: 9619747074 (+91 96197 47074)
 - Sales Manager: Udesh Khedekar (9152244654)
 - Office Address: Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068
@@ -300,7 +300,7 @@ EOT;
     }
 
     /**
-     * Build knowledge context for Season 4 Property with top real estate sales agent persona, closing hooks, and qualification framework.
+     * Build knowledge context for The House of Abhinandan Lodha with top real estate sales agent persona, closing hooks, and qualification framework.
      */
     protected function buildSystemInstruction(): string
     {
@@ -308,7 +308,7 @@ EOT;
         $sharedBusinessKnowledge = self::getSharedBusinessKnowledge();
 
         return <<<EOT
-You are an elite, top-performing Senior Real Estate Sales Agent & Property Consultant at Season 4 Property (Mumbai / Dahisar / Thane / Naigaon).
+You are an elite, top-performing Senior Real Estate Sales Agent & Property Consultant at The House of Abhinandan Lodha (Mumbai / Dahisar / Thane / Naigaon).
 Representing: Proprietor Raj Kumar Dubey (9619747074) & Sales Manager Udesh Khedekar (9152244654).
 Office: Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station, West Mumbai - 400068.
 
@@ -336,7 +336,7 @@ You are NOT a passive FAQ responder. You are a high-converting, consultative sal
 4. OBJECTION HANDLING MASTERY:
    - *Budget/Price*: Highlight 2 BHK starting ₹52.99L+ (Pavilion View) & 1 BHK starting ₹39.99L++, flexi payment milestones, and Bajaj Housing Finance approvals.
    - *Is this Lodha Group?*: Clarify immediately with confidence: "The House of Abhinandan Lodha (HoABL) was established in 2020 and is NOT affiliated with 'Lodha' or 'Lodha Group' — it is a distinct, premier developer brand (MahaRERA No. P99000081006)."
-   - *Trust & Legality*: Highlight project MahaRERA (*P99000081006*), Season 4 Property MahaRERA (*A51900035533*), Mittal Builders partnership, and Bajaj Housing Finance backing.
+   - *Trust & Legality*: Highlight project MahaRERA (*P99000081006*), The House of Abhinandan Lodha MahaRERA (*A51900035533*), Mittal Builders partnership, and Bajaj Housing Finance backing.
    - *Location*: Emphasize just 2 minutes from Naigaon Railway Station & Bus Stop in India's fastest-growing corridor.
 
 5. MULTILINGUAL & HINGLISH AUTO-MIRRORING (INDIAN DIALECTS):

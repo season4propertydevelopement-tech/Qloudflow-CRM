@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>{{ $video['title'] }} | Season 4 Property — Growth City Naigaon</title>
+    <title>{{ $video['title'] }} | The House of Abhinandan Lodha — Growth City Naigaon</title>
     <meta name="description" content="{{ $video['description'] }}">
 
     <!-- OpenGraph Metadata for WhatsApp, Facebook, LinkedIn Link Previews -->
-    <meta property="og:site_name" content="Season 4 Property — Growth City Naigaon">
+    <meta property="og:site_name" content="The House of Abhinandan Lodha — Growth City Naigaon">
     <meta property="og:title" content="📹 {{ $video['title'] }}">
     <meta property="og:description" content="{{ $video['description'] }}">
     <meta property="og:image" content="{{ $posterUrl }}">
@@ -384,7 +384,7 @@
         <!-- Brand Header -->
         <header class="brand-header">
             <a href="/" class="brand-logo-wrap">
-                <span class="brand-badge">Season 4 Property</span>
+                <span class="brand-badge">Abhinandan Lodha</span>
                 <span style="font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em;">Growth City Naigaon</span>
             </a>
             <div class="rera-tag">
@@ -498,7 +498,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p><strong>Season 4 Property</strong> — Authorized Channel Partner for Growth City Naigaon (HoABL).</p>
+            <p><strong>The House of Abhinandan Lodha</strong> — Growth City Naigaon.</p>
             <p>MahaRERA: <strong>A51900035533</strong> | Project MahaRERA: <strong>P99000081006</strong></p>
             <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
                 Office: Ground 21, Sai Krupa Mall, Opp. Dahisar Railway Station (West), Mumbai - 400068.
