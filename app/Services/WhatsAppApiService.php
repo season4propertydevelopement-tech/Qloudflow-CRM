@@ -92,6 +92,37 @@ class WhatsAppApiService
     public function sendMedia($phone, $mediaUrl, $caption = '', ?string $mediaPath = null)
     {
         try {
+            $target = $mediaPath ?: $mediaUrl;
+            $isVideo = false;
+            if (is_string($target)) {
+                $lower = strtolower($target);
+                if (str_ends_with($lower, '.mp4') || str_ends_with($lower, '.mov') || str_ends_with($lower, '.avi') || str_ends_with($lower, '.webm')) {
+                    $isVideo = true;
+                }
+            }
+
+            // High-converting shareable video link delivery (avoids WhatsApp 50MB binary drop/timeout)
+            if ($isVideo) {
+                $base = basename(parse_url($target, PHP_URL_PATH) ?? $target);
+                $slug = str_replace('.mp4', '', $base);
+                $publicBase = rtrim(env('PUBLIC_APP_URL', config('app.url', 'https://season4property.qloudsoft.in')), '/');
+                if (str_contains($publicBase, 'localhost') || str_contains($publicBase, '127.0.0.1')) {
+                    $publicBase = 'https://season4property.qloudsoft.in';
+                }
+                $watchUrl = $publicBase . '/watch/' . $slug;
+
+                $textMessage = trim($caption);
+                if (!empty($textMessage)) {
+                    if (!str_contains($textMessage, $watchUrl) && !str_contains($textMessage, $publicBase)) {
+                        $textMessage .= "\n\n▶️ *Watch Video Tour Online:*\n" . $watchUrl;
+                    }
+                } else {
+                    $textMessage = "📹 *Watch Video Tour Online:*\n" . $watchUrl;
+                }
+
+                return $this->sendMessage($phone, $textMessage);
+            }
+
             $payload = [
                 'phone' => $phone,
                 'media_url' => $mediaUrl,

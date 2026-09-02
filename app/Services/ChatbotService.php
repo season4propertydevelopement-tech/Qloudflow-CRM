@@ -456,11 +456,30 @@ class ChatbotService
     }
 
     /**
+     * Resolve public shareable URL for a video watch link or asset.
+     */
+    protected function getPublicVideoUrl(string $slugOrPath): string
+    {
+        $publicBase = rtrim(env('PUBLIC_APP_URL', config('app.url', 'https://season4property.qloudsoft.in')), '/');
+        if (str_contains($publicBase, 'localhost') || str_contains($publicBase, '127.0.0.1')) {
+            $publicBase = 'https://season4property.qloudsoft.in';
+        }
+
+        // If it's a slug for the watch player
+        if (!str_contains($slugOrPath, '/') && !str_contains($slugOrPath, '.')) {
+            return $publicBase . '/watch/' . $slugOrPath;
+        }
+
+        return $publicBase . '/' . ltrim($slugOrPath, '/');
+    }
+
+    /**
      * 4. 1 BHK Walkthrough Video Tour
      */
     protected function send1BhkMedia(Contact $contact, Conversation $conversation)
     {
-        $reply = "📹 *1 BHK Virtual Walkthrough & Video Tour:*\nHere is the walkthrough video tour of the 1 BHK Growth Home (323 sq.ft with 2 washrooms)!\n\n1️⃣ 💰 *Check Payment Plans & Pricing*\n2️⃣ 🔑 *Book VIP Site Visit for This Weekend*\n0️⃣ ↩️ *Main Menu*";
+        $watchUrl = $this->getPublicVideoUrl('1bhk-tour');
+        $reply = "📹 *1 BHK Virtual Walkthrough & Video Tour:*\nExplore the spacious 1 BHK Growth Home (323 sq.ft with 2 washrooms) at Growth City Naigaon!\n\n▶️ *Tap to Watch Full Video Tour Online:*\n{$watchUrl}\n\n1️⃣ 💰 *Check Payment Plans & Pricing*\n2️⃣ 🔑 *Book VIP Site Visit for This Weekend*\n0️⃣ ↩️ *Main Menu*";
         $this->sendReply($contact, $conversation, $reply, 'public-asset/video-floor-plan-1bhk.mp4');
     }
 
@@ -478,7 +497,8 @@ class ChatbotService
      */
     protected function send2BhkMedia(Contact $contact, Conversation $conversation)
     {
-        $reply = "📹 *2 BHK Virtual Walkthrough & Video Tour:*\nExperience the luxurious 2 BHK Sample Flat in 35-storey Growth City Naigaon!\n\n1️⃣ 🛋️ *View Free ₹1.5L Furniture Package Details*\n2️⃣ 💰 *Payment Plans & Down Payment Info*\n3️⃣ 🔑 *Book Guided VIP Site Visit*\n0️⃣ ↩️ *Main Menu*";
+        $watchUrl = $this->getPublicVideoUrl('2bhk-tour');
+        $reply = "📹 *2 BHK Virtual Walkthrough & Video Tour:*\nExperience the luxurious 2 BHK Sample Flat in 35-storey Growth City Naigaon!\n\n▶️ *Tap to Watch Full Video Tour Online:*\n{$watchUrl}\n\n1️⃣ 🛋️ *View Free ₹1.5L Furniture Package Details*\n2️⃣ 💰 *Payment Plans & Down Payment Info*\n3️⃣ 🔑 *Book Guided VIP Site Visit*\n0️⃣ ↩️ *Main Menu*";
         $this->sendReply($contact, $conversation, $reply, 'public-asset/video-floor-plan-2bhk.mp4');
     }
 
@@ -514,8 +534,9 @@ class ChatbotService
      */
     protected function sendLocationDetails(Contact $contact, Conversation $conversation)
     {
-        $reply = "📍 *Unbeatable Location & 2-Minute Station Walk:*\n• *Just 2 Minutes* from Naigaon Railway Station & Bus Stop 🚆\n• Located near prestigious Don Bosco School in India's fastest-growing corridor 🏫\n• Minutes from Western Express Highway and upcoming coastal roads 🚗\n• Office: Ground 21, Sai Krupa Mall, Opp. Dahisar Station (W), Mumbai\n\n1️⃣ 📹 *Watch Station Connectivity Video*\n2️⃣ 🔑 *Book Guided VIP Site Visit (Pick-up available)*\n3️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n0️⃣ ↩️ *Main Menu*";
-        $this->sendReply($contact, $conversation, $reply, 'public-asset/video-connectivity-location.mp4');
+        $watchUrl = $this->getPublicVideoUrl('connectivity-tour');
+        $reply = "📍 *Unbeatable Location & 2-Minute Station Walk:*\n• *Just 2 Minutes* from Naigaon Railway Station & Bus Stop 🚆\n• Located near prestigious Don Bosco School in India's fastest-growing corridor 🏫\n• Minutes from Western Express Highway and upcoming coastal roads 🚗\n• Office: Ground 21, Sai Krupa Mall, Opp. Dahisar Station (W), Mumbai\n\n▶️ *Watch Station Connectivity Video Tour:*\n{$watchUrl}\n\n1️⃣ 📹 *Watch Station Connectivity Video*\n2️⃣ 🔑 *Book Guided VIP Site Visit (Pick-up available)*\n3️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n0️⃣ ↩️ *Main Menu*";
+        $this->sendReply($contact, $conversation, $reply, 'public-asset/tower-elevation-exterior-view.jpeg');
     }
 
     /**
@@ -523,7 +544,8 @@ class ChatbotService
      */
     protected function sendLocationVideo(Contact $contact, Conversation $conversation)
     {
-        $reply = "🚆 *Naigaon Station Connectivity Tour:*\nHere is the video showing how close Growth City Naigaon is to Naigaon Railway Station (just 2 minutes walk)!\n\n1️⃣ 🔑 *Book VIP Site Visit with Free Station Pickup*\n2️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n0️⃣ ↩️ *Main Menu*";
+        $watchUrl = $this->getPublicVideoUrl('connectivity-tour');
+        $reply = "🚆 *Naigaon Station Connectivity Tour:*\nHere is the video showing how close Growth City Naigaon is to Naigaon Railway Station (just 2 minutes walk)!\n\n▶️ *Tap to Watch Full Video Tour Online:*\n{$watchUrl}\n\n1️⃣ 🔑 *Book VIP Site Visit with Free Station Pickup*\n2️⃣ 👤 *Speak with Raj Kumar Dubey (9619747074)*\n0️⃣ ↩️ *Main Menu*";
         $this->sendReply($contact, $conversation, $reply, 'public-asset/video-connectivity-location.mp4');
     }
 
@@ -541,7 +563,8 @@ class ChatbotService
      */
     protected function sendAmenitiesVideo(Contact $contact, Conversation $conversation)
     {
-        $reply = "🏊‍♂️ *Amenities Video Walkthrough:*\nExplore the clubhouse, swimming pools, sports arenas, and lifestyle amenities at Growth City Naigaon!\n\n1️⃣ 🔑 *Book Guided VIP Site Visit*\n0️⃣ ↩️ *Main Menu*";
+        $watchUrl = $this->getPublicVideoUrl('amenities-tour');
+        $reply = "🏊‍♂️ *Amenities Video Walkthrough:*\nExplore the clubhouse, swimming pools, sports arenas, and lifestyle amenities at Growth City Naigaon!\n\n▶️ *Tap to Watch Full Video Tour Online:*\n{$watchUrl}\n\n1️⃣ 🔑 *Book Guided VIP Site Visit*\n0️⃣ ↩️ *Main Menu*";
         $this->sendReply($contact, $conversation, $reply, 'public-asset/video-amenities-vvmc-naigaon.mp4');
     }
 
@@ -638,8 +661,27 @@ class ChatbotService
             return;
         }
 
+        $isVideo = false;
+        if ($mediaUrl) {
+            $lower = strtolower($mediaUrl);
+            if (str_ends_with($lower, '.mp4') || str_ends_with($lower, '.mov') || str_ends_with($lower, '.avi') || str_ends_with($lower, '.webm')) {
+                $isVideo = true;
+            }
+        }
+
+        // For video messages: Ensure shareable watch link is present and send as text message
+        // This delivers instantly with rich link preview on WhatsApp, preventing bulky binary upload errors.
+        if ($isVideo) {
+            $slug = basename($mediaUrl, '.mp4');
+            $watchUrl = $this->getPublicVideoUrl($slug);
+            if (!str_contains($reply, $watchUrl)) {
+                $reply .= "\n\n▶️ *Watch Video Tour Online:*\n" . $watchUrl;
+            }
+        }
+
         if (!str_starts_with($contact->phone, 'simulator_')) {
-            if ($mediaUrl) {
+            if ($mediaUrl && !$isVideo) {
+                // Image message: Send as media attachment
                 $mediaPath = null;
                 $relativePath = ltrim(parse_url($mediaUrl, PHP_URL_PATH) ?? $mediaUrl, '/\\');
                 if (file_exists(public_path($relativePath))) {
@@ -652,6 +694,7 @@ class ChatbotService
                 $response = $this->apiService->sendMedia($recipient, $fullUrl, $reply, $mediaPath);
                 Log::info('WhatsApp API sendMedia Response: ', ['recipient' => $recipient, 'response' => $response]);
             } else {
+                // Video message (with link) or plain text message
                 $response = $this->apiService->sendMessage($recipient, $reply);
                 Log::info('WhatsApp API Response: ', ['recipient' => $recipient, 'response' => $response]);
             }
@@ -669,7 +712,7 @@ class ChatbotService
             'direction' => 'outgoing',
             'message' => $reply,
             'media_url' => $formattedMediaUrl,
-            'message_type' => $mediaUrl ? 'image' : 'text',
+            'message_type' => $isVideo ? 'video' : ($mediaUrl ? 'image' : 'text'),
             'is_bot_message' => true,
             'status' => 'sent',
             'sent_at' => now(),

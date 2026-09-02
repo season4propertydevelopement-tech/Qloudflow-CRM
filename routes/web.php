@@ -7,6 +7,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\BotTestController;
+use App\Http\Controllers\VideoController;
+
+// Public Shareable Video Watch & Download Routes
+Route::get('/watch/{slug}', [VideoController::class, 'watch'])->name('video.watch');
+Route::get('/watch/{slug}/download', [VideoController::class, 'download'])->name('video.download');
 
 // Guest Authentication Routes
 Route::middleware('guest')->group(function () {
