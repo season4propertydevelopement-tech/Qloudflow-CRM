@@ -19,6 +19,16 @@ class MetaCampaign extends Model
         'whatsapp_sent',
         'whatsapp_failed',
         'headers',
+        'auto_welcome_enabled',
+        'auto_welcome_whatsapp',
+        'auto_welcome_whatsapp_template_id',
+        'auto_welcome_whatsapp_message',
+        'auto_welcome_whatsapp_media_url',
+        'auto_welcome_email',
+        'auto_welcome_email_template_id',
+        'auto_welcome_email_subject',
+        'auto_welcome_email_body',
+        'webhook_token',
     ];
 
     protected $casts = [
@@ -28,7 +38,38 @@ class MetaCampaign extends Model
         'emails_failed' => 'integer',
         'whatsapp_sent' => 'integer',
         'whatsapp_failed' => 'integer',
+        'auto_welcome_enabled' => 'boolean',
+        'auto_welcome_whatsapp' => 'boolean',
+        'auto_welcome_email' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($campaign) {
+            if (empty($campaign->webhook_token)) {
+                $campaign->webhook_token = bin2hex(random_bytes(16));
+            }
+        });
+    }
+
+    public function ensureWebhookToken(): string
+    {
+        if (empty($this->webhook_token)) {
+            $this->webhook_token = bin2hex(random_bytes(16));
+            $this->saveQuietly();
+        }
+        return $this->webhook_token;
+    }
+
+    public function whatsappWelcomeTemplate(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(MetaTemplate::class, 'auto_welcome_whatsapp_template_id');
+    }
+
+    public function emailWelcomeTemplate(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(MetaTemplate::class, 'auto_welcome_email_template_id');
+    }
 
     public function leads(): HasMany
     {

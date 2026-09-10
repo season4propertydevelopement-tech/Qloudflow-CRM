@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\WhatsAppApiService;
 use App\Services\BotSettingsService;
+use App\Services\WhatsAppAlertService;
+use App\Models\WhatsAppConnectedNumber;
 
 class WhatsAppController extends Controller
 {
@@ -17,7 +19,8 @@ class WhatsAppController extends Controller
 
     public function index()
     {
-        return view('whatsapp.connection');
+        $connectedNumbers = WhatsAppConnectedNumber::latest('id')->get();
+        return view('whatsapp.connection', compact('connectedNumbers'));
     }
 
     public function status()
@@ -140,5 +143,148 @@ class WhatsAppController extends Controller
         }
 
         return redirect()->route('whatsapp.settings')->with('success', 'Bot automation settings & operating schedule saved successfully!');
+    }
+
+    /**
+     * Get JSON list of connected numbers.
+     */
+    public function getNumbers()
+    {
+        return response()->json([
+            'success' => true,
+            'numbers' => WhatsAppConnectedNumber::latest('id')->get()
+        ]);
+    }
+
+    /**
+     * Add a new WhatsApp number to receive lead notifications,
+     * and notify both the primary connected session and the newly added number.
+     */
+    public function storeNumber(Request $request, WhatsAppAlertService $alertService)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:50',
+            'role' => 'nullable|string|max:100',
+            'notify_new_leads' => 'nullable|boolean',
+        ]);
+
+        $cleanPhone = $alertService->standardizePhone($request->phone);
+
+        if (empty($cleanPhone) || strlen($cleanPhone) < 7) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please enter a valid mobile number with country code.'
+                ], 422);
+            }
+            return back()->with('error', 'Please enter a valid mobile number with country code.');
+        }
+
+        // Check if number already registered
+        $existing = WhatsAppConnectedNumber::where('phone', $cleanPhone)->first();
+        if ($existing) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "WhatsApp number +{$cleanPhone} is already registered as '{$existing->name}'."
+                ], 422);
+            }
+            return back()->with('error', "WhatsApp number +{$cleanPhone} is already registered as '{$existing->name}'.");
+        }
+
+        $number = WhatsAppConnectedNumber::create([
+            'name' => trim($request->name),
+            'phone' => $cleanPhone,
+            'role' => trim($request->input('role', 'Sales Consultant')) ?: 'Sales Consultant',
+            'is_active' => true,
+            'notify_new_leads' => $request->boolean('notify_new_leads', true),
+            'last_notified_at' => null,
+        ]);
+
+        // Dispatch alerts to both connected WhatsApp device and newly added number
+        $notifyResults = $alertService->notifyNumberAdded($number);
+
+        $successMsg = "WhatsApp number +{$number->phone} ({$number->name}) added successfully!";
+        if ($notifyResults['primary_notified'] && $notifyResults['recipient_notified']) {
+            $successMsg .= " Notification sent to connected WhatsApp device and +{$number->phone}.";
+        } elseif ($notifyResults['recipient_notified']) {
+            $successMsg .= " Welcome alert sent to +{$number->phone}.";
+        } elseif ($notifyResults['primary_notified']) {
+            $successMsg .= " Notification sent to connected WhatsApp device.";
+        }
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $successMsg,
+                'number' => $number,
+                'notify_results' => $notifyResults,
+            ]);
+        }
+
+        return back()->with('success', $successMsg);
+    }
+
+    /**
+     * Toggle active state or lead notification state of a connected number.
+     */
+    public function toggleNumber(Request $request, WhatsAppConnectedNumber $number)
+    {
+        if ($request->has('notify_new_leads')) {
+            $number->notify_new_leads = $request->boolean('notify_new_leads');
+        } else {
+            $number->is_active = !$number->is_active;
+        }
+        $number->save();
+
+        $statusStr = $number->is_active ? 'activated' : 'paused';
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Alerts for {$number->name} ({$number->formatted_phone}) {$statusStr}.",
+                'number' => $number
+            ]);
+        }
+
+        return back()->with('success', "Alerts for {$number->name} {$statusStr}.");
+    }
+
+    /**
+     * Remove a connected WhatsApp number from lead broadcast.
+     */
+    public function destroyNumber(Request $request, WhatsAppConnectedNumber $number)
+    {
+        $name = $number->name;
+        $phone = $number->formatted_phone;
+        $number->delete();
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Removed {$name} ({$phone}) from WhatsApp lead broadcast list."
+            ]);
+        }
+
+        return back()->with('success', "Removed {$name} from WhatsApp lead broadcast list.");
+    }
+
+    /**
+     * Send test alert message to a connected WhatsApp number.
+     */
+    public function testNumberMessage(Request $request, WhatsAppConnectedNumber $number, WhatsAppAlertService $alertService)
+    {
+        $result = $alertService->sendTestAlert($number);
+
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json($result);
+        }
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        }
+
+        return back()->with('error', "Could not send test message: " . ($result['error'] ?? 'Unknown error'));
     }
 }

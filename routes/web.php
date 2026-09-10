@@ -27,13 +27,17 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
+// Root entry: If logged in, go to dashboard. If guest or cron ping, show login & run 10-min cron check
+Route::get('/', function (\Illuminate\Http\Request $request) {
+    if (\Illuminate\Support\Facades\Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return app(AuthController::class)->showLoginForm($request);
+});
+
 // Authenticated Application Routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    });
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -59,6 +63,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/qr', [WhatsAppController::class, 'qr']);
         Route::post('/api/connect', [WhatsAppController::class, 'connect']);
         Route::post('/api/logout', [WhatsAppController::class, 'logout']);
+
+        // Connected WhatsApp Numbers for Team Lead Broadcasts
+        Route::get('/numbers', [WhatsAppController::class, 'getNumbers'])->name('whatsapp.numbers');
+        Route::post('/numbers', [WhatsAppController::class, 'storeNumber'])->name('whatsapp.numbers.store');
+        Route::post('/numbers/{number}/toggle', [WhatsAppController::class, 'toggleNumber'])->name('whatsapp.numbers.toggle');
+        Route::delete('/numbers/{number}', [WhatsAppController::class, 'destroyNumber'])->name('whatsapp.numbers.destroy');
+        Route::post('/numbers/{number}/test-message', [WhatsAppController::class, 'testNumberMessage'])->name('whatsapp.numbers.test');
     });
 
     // Chatbot Simulator & Live Sandbox Testing Routes
@@ -80,6 +91,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/campaigns/{campaign}/send-whatsapp', [MetaCampaignController::class, 'sendBulkWhatsApp'])->name('campaigns.send-whatsapp');
         Route::post('/campaigns/{campaign}/leads/{lead}/send-single-email', [MetaCampaignController::class, 'sendSingleEmail'])->name('campaigns.leads.send-email');
         Route::post('/campaigns/{campaign}/leads/{lead}/send-single-whatsapp', [MetaCampaignController::class, 'sendSingleWhatsApp'])->name('campaigns.leads.send-whatsapp');
+
+        // Auto-Welcome & Lead Creation
+        Route::put('/campaigns/{campaign}/automation-settings', [MetaCampaignController::class, 'updateAutomationSettings'])->name('campaigns.automation-settings');
+        Route::post('/campaigns/{campaign}/leads', [MetaCampaignController::class, 'storeSingleLead'])->name('campaigns.leads.store');
+        Route::post('/campaigns/{campaign}/dispatch-pending-welcome', [MetaCampaignController::class, 'dispatchWelcomeToPending'])->name('campaigns.dispatch-pending-welcome');
 
         // Templates Management
         Route::get('/templates', [MetaTemplateController::class, 'index'])->name('templates.index');

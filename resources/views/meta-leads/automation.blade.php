@@ -13,7 +13,7 @@ window.automationDashboard = function() {
         previewLoading: false,
         previewData: null,
         previewError: null,
-        sheetUrl: 'https://docs.google.com/spreadsheets/d/1ni-dYXcAk-WMDWsF98nnv1an832xViwZoE6u9Sacnl8/edit?gid=0#gid=0',
+        sheetUrl: '',
         isSubmitting: false,
 
         testSheetConnection() {
@@ -437,7 +437,7 @@ window.automationDashboard = function() {
                             name="name"
                             required
                             placeholder="e.g. Bisani Rocketpay June Leads Campaign"
-                            value="{{ old('name', 'Bisani Rocketpay Leads Campaign') }}"
+                            value="{{ old('name', '') }}"
                             class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800"
                         >
                     </div>
@@ -452,7 +452,7 @@ window.automationDashboard = function() {
                             rows="2"
                             placeholder="e.g. Area Sales Manager & Business Development hiring sequence"
                             class="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800"
-                        >{{ old('description', 'Automated WhatsApp briefing and interview invitation email sequence for Meta Lead respondents.') }}</textarea>
+                        >{{ old('description', '') }}</textarea>
                     </div>
 
                     <!-- Google Sheet URL -->

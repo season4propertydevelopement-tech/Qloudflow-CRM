@@ -103,7 +103,8 @@ class Contact extends Model
     }
 
     /**
-     * Evaluate lead after conversation has accumulated messages (at least 5 messages)
+     * Comprehensive Lead Qualification: Evaluates conversation history, bot stage,
+     * numeric choices (1, 2, 3, 4, etc.), and NLP text keywords.
      */
     public function evaluateLeadFromConversationHistory(?Conversation $conversation = null): void
     {
@@ -115,24 +116,93 @@ class Contact extends Model
         $messages = $conv->messages()->orderBy('created_at', 'asc')->get();
         $totalCount = $messages->count();
 
-        // At least 5 conversation messages required for full qualification
-        if ($totalCount < 5) {
-            // Early intent trigger for immediate hot signals (e.g. asking for price or quote immediately)
-            $incoming = $messages->where('direction', 'incoming')->pluck('message')->implode(' ');
-            if ($this->hasHotKeywords(strtolower($incoming))) {
-                $this->lead_status = 'hot';
-                $this->lead_score = 85;
-                $this->save();
-            }
+        if ($totalCount === 0) {
             return;
         }
 
-        // Instant Real-Time Heuristic Scoring (Sub-millisecond execution)
-
-        // Comprehensive NLP & Intent Analysis over cumulative text
         $incomingMessages = $messages->where('direction', 'incoming')->pluck('message')->toArray();
+        $outgoingMessages = $messages->where('direction', 'outgoing')->pluck('message')->toArray();
         $allClientText = strtolower(implode(' ', $incomingMessages));
+        $allBotText = implode(' ', $outgoingMessages);
+        $clientMsgCount = count($incomingMessages);
 
+        // 1. VIP Site Visit Booked / Confirmed Detection (Highest Hot Intent)
+        $hasScheduledVisit = str_contains($allBotText, 'VIP Site Visit Scheduled')
+            || str_contains($allBotText, 'Site Visit Scheduled')
+            || str_contains($allBotText, 'Visit Confirmed')
+            || ($this->current_node_id === 'site_visit_node' && in_array($messages->last()?->message, ['1', '2', '3']));
+
+        if ($hasScheduledVisit) {
+            $this->lead_status = 'hot';
+            $this->lead_score = 98;
+            $this->notes = "Lead Qualified as HOT (VIP Site Visit Scheduled via WhatsApp Bot).";
+            $this->save();
+            return;
+        }
+
+        // 2. Human Advisor Handoff Detection
+        if ($this->human_handoff || $this->current_node_id === 'human_node' || str_contains($allBotText, 'Raj Kumar Dubey')) {
+            $this->lead_status = 'hot';
+            $this->lead_score = 95;
+            $this->notes = "Lead Qualified as HOT (Requested Senior Sales Advisor / Raj Kumar Dubey).";
+            $this->save();
+            return;
+        }
+
+        // 3. High-Intent Node Stages (2 BHK, 1 BHK, Payment Plans, Furniture Package, Site Visit Menu)
+        $hotNodes = [
+            'site_visit_node',
+            '2bhk_node',
+            '1bhk_node',
+            '2bhk_large_node',
+            'payment_plans_node',
+            'furniture_offer_node',
+        ];
+
+        if (in_array($this->current_node_id, $hotNodes)) {
+            $this->lead_status = 'hot';
+            $this->lead_score = max(85, (int)$this->lead_score);
+            $this->notes = "Lead Qualified as HOT (Actively exploring pricing / configurations / site visits in bot flow).";
+            $this->save();
+            return;
+        }
+
+        // 4. Numeric Menu Intent Evaluation (Customer using 1, 2, 3, 4, 5)
+        $hasSelectedSiteVisit = false;
+        $hasSelectedHumanAgent = false;
+        $hasSelectedPropertyOption = false;
+        $hasSelectedExploreOption = false;
+
+        foreach ($incomingMessages as $rawMsg) {
+            $cleaned = trim($rawMsg);
+            if ($cleaned === '4') {
+                $hasSelectedSiteVisit = true;
+            } elseif ($cleaned === '5') {
+                $hasSelectedHumanAgent = true;
+            } elseif (in_array($cleaned, ['1', '2'])) {
+                $hasSelectedPropertyOption = true;
+            } elseif (in_array($cleaned, ['3'])) {
+                $hasSelectedExploreOption = true;
+            }
+        }
+
+        if ($hasSelectedSiteVisit) {
+            $this->lead_status = 'hot';
+            $this->lead_score = 92;
+            $this->notes = "Lead Qualified as HOT (Selected Site Visit booking menu in WhatsApp).";
+            $this->save();
+            return;
+        }
+
+        if ($hasSelectedHumanAgent) {
+            $this->lead_status = 'hot';
+            $this->lead_score = 95;
+            $this->notes = "Lead Qualified as HOT (Selected direct advisor contact in WhatsApp).";
+            $this->save();
+            return;
+        }
+
+        // 5. Comprehensive Text Keyword NLP Analysis
         $hotSignals = [
             'price', 'pricing', 'cost', 'quote', 'quotation', 'rate', 'rates',
             '1bhk', '2bhk', '1 bhk', '2 bhk', '3bhk', 'flat', 'apartment', 'residence',
@@ -162,22 +232,37 @@ class Contact extends Model
             }
         }
 
-        $clientMsgCount = count($incomingMessages);
-
         if ($hotHits >= 1) {
             $this->lead_status = 'hot';
             $this->lead_score = min(98, 80 + ($hotHits * 5));
             $this->notes = "Lead Qualified as HOT based on property purchase intent in {$clientMsgCount} messages.";
-        } elseif ($warmHits >= 1) {
-            $this->lead_status = 'warm';
-            $this->lead_score = min(75, 50 + ($warmHits * 5));
-            $this->notes = "Lead Qualified as WARM based on property inquiry in {$clientMsgCount} messages.";
-        } else {
-            $this->lead_status = 'cold';
-            $this->lead_score = 15;
-            $this->notes = "Lead Classified as COLD (Casual/Inactive after {$totalCount} interactions).";
+            $this->save();
+            return;
         }
 
+        // 6. Warm Engagement Evaluation (Exploring nodes or selected numeric options 1, 2, 3)
+        $warmNodes = [
+            'growth_city_node',
+            'offers_node',
+            'location_node',
+            'amenities_node',
+            '1bhk_media_node',
+            '2bhk_media_node',
+            'hoabl_about_node',
+        ];
+
+        if ($warmHits >= 1 || in_array($this->current_node_id, $warmNodes) || $hasSelectedPropertyOption || $hasSelectedExploreOption || $clientMsgCount >= 2) {
+            $this->lead_status = 'warm';
+            $this->lead_score = min(78, 55 + ($warmHits * 5) + ($clientMsgCount * 3));
+            $this->notes = "Lead Qualified as WARM (Active prospect inquiring via WhatsApp menu options).";
+            $this->save();
+            return;
+        }
+
+        // 7. Cold default only for truly dormant/unresponsive contacts
+        $this->lead_status = 'cold';
+        $this->lead_score = 15;
+        $this->notes = "Lead Classified as COLD (Initial interaction, awaiting selection).";
         $this->save();
     }
 

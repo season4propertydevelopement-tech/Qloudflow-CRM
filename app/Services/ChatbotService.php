@@ -60,63 +60,63 @@ class ChatbotService
 
         // 3. Global Explicit 1 BHK Inquiry (Explicitly answer "Yes, 1 BHK is available!")
         if (preg_match('/\b(1\s*bhk|washroom|washrooms|toilet|powder\s*room|323|39\.99)\b/i', $input)) {
-            $contact->update(['current_node_id' => '1bhk_node']);
+            $contact->update(['current_node_id' => '1bhk_node', 'lead_status' => 'hot', 'lead_score' => 85]);
             $this->send1BhkDetails($contact, $conversation);
             return;
         }
 
         // 4. Global 2 BHK Inquiry
         if (preg_match('/\b(2\s*bhk|485|621|52\.99)\b/i', $input)) {
-            $contact->update(['current_node_id' => '2bhk_node']);
+            $contact->update(['current_node_id' => '2bhk_node', 'lead_status' => 'hot', 'lead_score' => 88]);
             $this->send2BhkDetails($contact, $conversation);
             return;
         }
 
         // 5. Global Furniture Package & Offers Inquiry
         if (preg_match('/\b(furniture|sofa|bed|wardrobe|offer|offers|discount|incentive|package|free\s*furniture)\b/i', $input)) {
-            $contact->update(['current_node_id' => 'offers_node']);
+            $contact->update(['current_node_id' => 'offers_node', 'lead_status' => 'warm', 'lead_score' => 75]);
             $this->sendOffersDetails($contact, $conversation);
             return;
         }
 
         // 6. Global Station / Location / Connectivity Inquiry
         if (preg_match('/\b(station|distance|station\s*se|kitni\s*dur|location|connectivity|route|kaha\s*hai|railway|naigaon|address|where)\b/i', $input)) {
-            $contact->update(['current_node_id' => 'location_node']);
+            $contact->update(['current_node_id' => 'location_node', 'lead_status' => 'warm', 'lead_score' => 70]);
             $this->sendLocationDetails($contact, $conversation);
             return;
         }
 
         // 7. Global HoABL vs Lodha Group Clarification Inquiry
         if (preg_match('/\b(lodha|lodha\s*group|abhinandan|hoabl|builder|developer|mittal|bajaj)\b/i', $input)) {
-            $contact->update(['current_node_id' => 'hoabl_about_node']);
+            $contact->update(['current_node_id' => 'hoabl_about_node', 'lead_status' => 'warm', 'lead_score' => 65]);
             $this->sendHoablClarification($contact, $conversation);
             return;
         }
 
         // 8. Global Pricing / Cost / Budget / Loan / EMI Inquiry
         if (preg_match('/\b(price|pricing|cost|budget|kitna|rate|rates|kharcha|paisa|emi|down\s*payment|loan|finance)\b/i', $input)) {
-            $contact->update(['current_node_id' => 'payment_plans_node']);
+            $contact->update(['current_node_id' => 'payment_plans_node', 'lead_status' => 'hot', 'lead_score' => 90]);
             $this->sendPaymentPlansDetails($contact, $conversation);
             return;
         }
 
         // 9. Global Site Visit / Sample Flat / Tour Inquiry
         if (preg_match('/\b(visit|site\s*visit|sample\s*flat|dekhna|tour|appointment|weekend|saturday|sunday)\b/i', $input)) {
-            $contact->update(['current_node_id' => 'site_visit_node']);
+            $contact->update(['current_node_id' => 'site_visit_node', 'lead_status' => 'hot', 'lead_score' => 92]);
             $this->sendSiteVisitMenu($contact, $conversation);
             return;
         }
 
         // 10. Global Amenities / Clubhouse Inquiry
         if (preg_match('/\b(amenit|clubhouse|gym|pool|swimming|garden|sports|theatre|amphitheatre|zumba)\b/i', $input)) {
-            $contact->update(['current_node_id' => 'amenities_node']);
+            $contact->update(['current_node_id' => 'amenities_node', 'lead_status' => 'warm', 'lead_score' => 70]);
             $this->sendAmenitiesDetails($contact, $conversation);
             return;
         }
 
         // 11. Global Speak to Human / Contact / Raj Kumar Dubey
         if (preg_match('/\b(human|agent|person|call|phone|number|contact|raj\s*kumar|dubey|baat|helpdesk)\b/i', $input)) {
-            $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true]);
+            $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true, 'lead_status' => 'hot', 'lead_score' => 95]);
             $this->sendHumanContactDetails($contact, $conversation);
             return;
         }
@@ -137,23 +137,23 @@ class ChatbotService
             // --- STATE: welcome_node ---
             if ($currentState === 'welcome_node') {
                 if ($num === '1') {
-                    $contact->update(['current_node_id' => 'growth_city_node']);
+                    $contact->update(['current_node_id' => 'growth_city_node', 'lead_status' => 'warm', 'lead_score' => 70]);
                     $this->sendGrowthCityOverview($contact, $conversation);
                     return;
                 } elseif ($num === '2') {
-                    $contact->update(['current_node_id' => 'offers_node']);
+                    $contact->update(['current_node_id' => 'offers_node', 'lead_status' => 'warm', 'lead_score' => 75]);
                     $this->sendOffersDetails($contact, $conversation);
                     return;
                 } elseif ($num === '3') {
-                    $contact->update(['current_node_id' => 'location_node']);
+                    $contact->update(['current_node_id' => 'location_node', 'lead_status' => 'warm', 'lead_score' => 65]);
                     $this->sendLocationDetails($contact, $conversation);
                     return;
                 } elseif ($num === '4') {
-                    $contact->update(['current_node_id' => 'site_visit_node']);
+                    $contact->update(['current_node_id' => 'site_visit_node', 'lead_status' => 'hot', 'lead_score' => 92]);
                     $this->sendSiteVisitMenu($contact, $conversation);
                     return;
                 } elseif ($num === '5') {
-                    $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true]);
+                    $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true, 'lead_status' => 'hot', 'lead_score' => 95]);
                     $this->sendHumanContactDetails($contact, $conversation);
                     return;
                 }
@@ -162,23 +162,23 @@ class ChatbotService
             // --- STATE: growth_city_node ---
             elseif ($currentState === 'growth_city_node') {
                 if ($num === '1') {
-                    $contact->update(['current_node_id' => '2bhk_node']);
+                    $contact->update(['current_node_id' => '2bhk_node', 'lead_status' => 'hot', 'lead_score' => 88]);
                     $this->send2BhkDetails($contact, $conversation);
                     return;
                 } elseif ($num === '2') {
-                    $contact->update(['current_node_id' => 'offers_node']);
+                    $contact->update(['current_node_id' => 'offers_node', 'lead_status' => 'warm', 'lead_score' => 75]);
                     $this->sendOffersDetails($contact, $conversation);
                     return;
                 } elseif ($num === '3') {
-                    $contact->update(['current_node_id' => 'amenities_node']);
+                    $contact->update(['current_node_id' => 'amenities_node', 'lead_status' => 'warm', 'lead_score' => 70]);
                     $this->sendAmenitiesDetails($contact, $conversation);
                     return;
                 } elseif ($num === '4') {
-                    $contact->update(['current_node_id' => 'site_visit_node']);
+                    $contact->update(['current_node_id' => 'site_visit_node', 'lead_status' => 'hot', 'lead_score' => 92]);
                     $this->sendSiteVisitMenu($contact, $conversation);
                     return;
                 } elseif ($num === '5') {
-                    $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true]);
+                    $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true, 'lead_status' => 'hot', 'lead_score' => 95]);
                     $this->sendHumanContactDetails($contact, $conversation);
                     return;
                 }
@@ -371,16 +371,19 @@ class ChatbotService
             // --- STATE: site_visit_node ---
             elseif ($currentState === 'site_visit_node') {
                 if ($num === '1') {
+                    $contact->update(['lead_status' => 'hot', 'lead_score' => 98]);
                     $this->sendVisitConfirmed($contact, $conversation, 'Saturday');
                     return;
                 } elseif ($num === '2') {
+                    $contact->update(['lead_status' => 'hot', 'lead_score' => 98]);
                     $this->sendVisitConfirmed($contact, $conversation, 'Sunday');
                     return;
                 } elseif ($num === '3') {
+                    $contact->update(['lead_status' => 'hot', 'lead_score' => 95]);
                     $this->sendVisitConfirmed($contact, $conversation, 'Weekday');
                     return;
                 } elseif ($num === '4') {
-                    $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true]);
+                    $contact->update(['current_node_id' => 'human_node', 'human_handoff' => true, 'lead_status' => 'hot', 'lead_score' => 95]);
                     $this->sendHumanContactDetails($contact, $conversation);
                     return;
                 }

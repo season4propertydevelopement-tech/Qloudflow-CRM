@@ -76,6 +76,7 @@ class WebhookController extends Controller
             ->orWhere('phone', $phone)
             ->first();
 
+        $isNewContact = !$contact;
         if (!$contact) {
             $contact = Contact::create([
                 'phone' => $phone,
@@ -86,6 +87,23 @@ class WebhookController extends Controller
                 'lead_score' => 10,
                 'chatbot_enabled' => !$isGroup, // Never enable chatbot on groups
             ]);
+
+            // Broadcast new incoming WhatsApp prospect to all connected numbers
+            if (!$isGroup) {
+                try {
+                    app(\App\Services\WhatsAppAlertService::class)->broadcastNewLead([
+                        'name' => $contact->name ?: 'New WhatsApp User',
+                        'phone' => $contact->formatted_phone ?: $contact->phone,
+                        'email' => 'N/A',
+                        'project' => 'Growth City Naigaon',
+                        'location' => 'WhatsApp Inbound',
+                        'source' => 'Direct WhatsApp Message',
+                        'notes' => substr($messageText, 0, 150),
+                    ]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Failed to broadcast new WhatsApp contact: " . $e->getMessage());
+                }
+            }
         } else {
             if ($realPhone && $contact->phone !== $realPhone) {
                 $contact->phone = $realPhone;

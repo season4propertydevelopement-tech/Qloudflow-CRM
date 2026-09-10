@@ -259,6 +259,21 @@ class ContactController extends Controller
                     ['status' => 'active', 'last_message_at' => now()]
                 );
 
+                // Broadcast new imported contact to all connected WhatsApp numbers
+                try {
+                    app(\App\Services\WhatsAppAlertService::class)->broadcastNewLead([
+                        'name' => $newContact->name,
+                        'phone' => $newContact->formatted_phone ?: $newContact->phone,
+                        'email' => 'N/A',
+                        'project' => 'Growth City Naigaon',
+                        'location' => 'Imported Contact',
+                        'source' => 'Excel Import',
+                        'notes' => $newContact->notes,
+                    ]);
+                } catch (\Throwable $e) {
+                    // Continue batch import
+                }
+
                 $createdCount++;
             }
         }

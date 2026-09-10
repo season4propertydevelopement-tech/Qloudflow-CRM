@@ -35,6 +35,46 @@ window.campaignDashboard = function() {
         whatsappSubmitting: false,
         whatsappPreviewMode: false,
 
+        // Auto-Welcome Settings & Modal State
+        autoWelcomeModalOpen: false,
+        autoWelcomeEnabled: {{ $campaign->auto_welcome_enabled ? 'true' : 'false' }},
+        autoWelcomeWhatsApp: {{ $campaign->auto_welcome_whatsapp ? 'true' : 'false' }},
+        autoWelcomeWhatsAppTemplateId: '{{ $campaign->auto_welcome_whatsapp_template_id ?? '' }}',
+        autoWelcomeWhatsAppMessage: @json($campaign->auto_welcome_whatsapp_message ?? ''),
+        autoWelcomeWhatsAppMediaUrl: @json($campaign->auto_welcome_whatsapp_media_url ?? ''),
+        autoWelcomeEmail: {{ $campaign->auto_welcome_email ? 'true' : 'false' }},
+        autoWelcomeEmailTemplateId: '{{ $campaign->auto_welcome_email_template_id ?? '' }}',
+        autoWelcomeEmailSubject: @json($campaign->auto_welcome_email_subject ?? ''),
+        autoWelcomeEmailBody: @json($campaign->auto_welcome_email_body ?? ''),
+        autoWelcomeSubmitting: false,
+        deactivatingAutoWelcome: false,
+        activatingAutoWelcome: false,
+        autoWelcomeTab: 'whatsapp',
+        autoWelcomeAlert: null,
+        webhookToken: @json($campaign->webhook_token),
+        webhookUrl: '{{ url('/api/meta-leads/campaigns/' . $campaign->id . '/webhook?token=' . $campaign->webhook_token) }}',
+        webhookCopied: false,
+        cronSyncUrl: '{{ url('/api/meta-leads/campaigns/' . $campaign->id . '/sync-cron?token=' . $campaign->webhook_token) }}',
+        cronSyncCopied: false,
+        cronSyncAllUrl: '{{ url('/api/meta-leads/cron/sync-all?token=' . env('CRON_TOKEN', 'season4_master_sync_token')) }}',
+        cronSyncAllCopied: false,
+        dispatchPendingSubmitting: false,
+        dispatchPendingAlert: null,
+
+        // Add Lead Modal State
+        addLeadModalOpen: false,
+        addLeadSubmitting: false,
+        newLead: {
+            name: '',
+            phone: '',
+            email: '',
+            city: '',
+            platform: 'Manual Entry',
+            custom_fields: {},
+            send_welcome: {{ $campaign->auto_welcome_enabled ? 'true' : 'false' }}
+        },
+        addLeadAlert: null,
+
         // Test Dispatch State
         testPhone: '9699867990',
         testEmailAddress: 'amarvcode@gmail.com',
@@ -90,10 +130,10 @@ window.campaignDashboard = function() {
 
         openBulkEmail() {
             if (!this.emailSubject) {
-                this.emailSubject = 'Opportunity Update: @{{which_position_are_you_applying_for?}} - @{{full_name}}';
+                this.emailSubject = 'Welcome @{{full_name}} - The House of Abhinandan Lodha';
             }
             if (!this.emailBody) {
-                this.emailBody = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">\n  <h2 style="color: #0284c7; margin-top: 0;">Hello @{{full_name}},</h2>\n  <p style="color: #334155; font-size: 14px; line-height: 1.6;">Thank you for applying for the <strong>@{{which_position_are_you_applying_for?}}</strong> role in <strong>@{{city}}</strong>.</p>\n  <p style="color: #334155; font-size: 14px; line-height: 1.6;">Our HR team has reviewed your profile and we would like to schedule a quick conversation.</p>\n  <p style="color: #64748b; font-size: 12px; border-top: 1px solid #f1f5f9; padding-top: 15px;">Best regards,<br>Rocketpay Talent Acquisition</p>\n</div>';
+                this.emailBody = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;">\n  <div style="background: #0f172a; padding: 20px; border-radius: 12px; color: #ffffff; text-align: center;">\n    <h1 style="margin: 0; font-size: 20px; font-weight: bold; color: #f59e0b;">The House of Abhinandan Lodha</h1>\n    <p style="margin: 6px 0 0 0; font-size: 13px; color: #cbd5e1;">Curated Land & Premium Living</p>\n  </div>\n  <div style="padding: 24px 8px 12px 8px; color: #334155; font-size: 14px; line-height: 1.6;">\n    <p>Dear <strong>@{{full_name}}</strong>,</p>\n    <p>Thank you for expressing your interest in <strong>The House of Abhinandan Lodha</strong>.</p>\n    <p>Our senior relationship advisor will connect with you shortly with complete project brochures, layout master plans, and exclusive pricing options.</p>\n    <p style="margin-top: 24px; color: #64748b; font-size: 12px; border-top: 1px solid #f1f5f9; padding-top: 16px;">Warm regards,<br><strong>The House of Abhinandan Lodha</strong></p>\n  </div>\n</div>';
             }
             this.emailPreviewMode = false;
             this.testAlert = null;
@@ -102,7 +142,7 @@ window.campaignDashboard = function() {
 
         openBulkWhatsApp() {
             if (!this.whatsappMessage) {
-                this.whatsappMessage = 'Hi @{{full_name}}, 👋\n\nThank you for your application for the *@{{which_position_are_you_applying_for?}}* role with Rocketpay.\n\nAre you available for a brief briefing call today? Please reply *YES* to proceed.';
+                this.whatsappMessage = 'Hi @{{full_name}}, 👋\n\nThank you for reaching out to *The House of Abhinandan Lodha*.\n\nOur property specialist would like to share the master layout and pricing dossier with you. Are you available for a brief 5-minute call today? Please reply *YES* to proceed.\n\nWarm regards,\n*The House of Abhinandan Lodha*';
             }
             this.whatsappPreviewMode = false;
             this.testAlert = null;
@@ -256,6 +296,297 @@ window.campaignDashboard = function() {
                 }
             }
             return result;
+        },
+
+        openAutoWelcomeModal() {
+            if (!this.autoWelcomeWhatsAppMessage && this.autoWelcomeWhatsAppTemplateId && this.whatsappTemplatesData[this.autoWelcomeWhatsAppTemplateId]) {
+                this.autoWelcomeWhatsAppMessage = this.whatsappTemplatesData[this.autoWelcomeWhatsAppTemplateId].body;
+            } else if (!this.autoWelcomeWhatsAppMessage) {
+                this.autoWelcomeWhatsAppMessage = 'Hi @{{full_name}}, 👋\n\nThank you for reaching out to *The House of Abhinandan Lodha*.\n\nOur property specialist would like to share the master layout and pricing dossier with you. Are you available for a brief 5-minute call today? Please reply *YES* to proceed.\n\nWarm regards,\n*The House of Abhinandan Lodha*';
+            }
+            if (!this.autoWelcomeEmailSubject && this.autoWelcomeEmailTemplateId && this.emailTemplatesData[this.autoWelcomeEmailTemplateId]) {
+                this.autoWelcomeEmailSubject = this.emailTemplatesData[this.autoWelcomeEmailTemplateId].subject;
+                this.autoWelcomeEmailBody = this.emailTemplatesData[this.autoWelcomeEmailTemplateId].body;
+            } else {
+                if (!this.autoWelcomeEmailSubject) {
+                    this.autoWelcomeEmailSubject = 'Welcome @{{full_name}} - The House of Abhinandan Lodha';
+                }
+                if (!this.autoWelcomeEmailBody) {
+                    this.autoWelcomeEmailBody = '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;">\n  <div style="background: #0f172a; padding: 20px; border-radius: 12px; color: #ffffff; text-align: center;">\n    <h1 style="margin: 0; font-size: 20px; font-weight: bold; color: #f59e0b;">The House of Abhinandan Lodha</h1>\n    <p style="margin: 6px 0 0 0; font-size: 13px; color: #cbd5e1;">Curated Land & Premium Living</p>\n  </div>\n  <div style="padding: 24px 8px 12px 8px; color: #334155; font-size: 14px; line-height: 1.6;">\n    <p>Dear <strong>@{{full_name}}</strong>,</p>\n    <p>Thank you for expressing your interest in <strong>The House of Abhinandan Lodha</strong>.</p>\n    <p>Our senior relationship advisor will connect with you shortly with complete project brochures, layout master plans, and exclusive pricing options.</p>\n    <p style="margin-top: 24px; color: #64748b; font-size: 12px; border-top: 1px solid #f1f5f9; padding-top: 16px;">Warm regards,<br><strong>The House of Abhinandan Lodha</strong></p>\n  </div>\n</div>';
+                }
+            }
+            this.autoWelcomeAlert = null;
+            this.autoWelcomeModalOpen = true;
+        },
+
+        openAddLeadModal() {
+            this.newLead = {
+                name: '',
+                phone: '',
+                email: '',
+                city: '',
+                platform: 'Manual Entry',
+                custom_fields: {},
+                send_welcome: this.autoWelcomeEnabled
+            };
+            this.addLeadAlert = null;
+            this.addLeadModalOpen = true;
+        },
+
+        onAutoWelcomeWhatsAppTemplateSelect(tmplId) {
+            if (!tmplId || !this.whatsappTemplatesData[tmplId]) return;
+            const tmpl = this.whatsappTemplatesData[tmplId];
+            this.autoWelcomeWhatsAppMessage = tmpl.body || '';
+            this.autoWelcomeWhatsAppMediaUrl = tmpl.media_url || '';
+        },
+
+        onAutoWelcomeEmailTemplateSelect(tmplId) {
+            if (!tmplId || !this.emailTemplatesData[tmplId]) return;
+            const tmpl = this.emailTemplatesData[tmplId];
+            this.autoWelcomeEmailSubject = tmpl.subject || '';
+            this.autoWelcomeEmailBody = tmpl.body || '';
+        },
+
+        insertAutoWelcomeWhatsAppVar(varName) {
+            this.autoWelcomeWhatsAppMessage = (this.autoWelcomeWhatsAppMessage || '') + ' {{' + varName + '}}';
+        },
+
+        insertAutoWelcomeEmailVar(varName) {
+            this.autoWelcomeEmailBody = (this.autoWelcomeEmailBody || '') + ' {{' + varName + '}}';
+        },
+
+        copyWebhookUrl() {
+            navigator.clipboard.writeText(this.webhookUrl).then(() => {
+                this.webhookCopied = true;
+                setTimeout(() => { this.webhookCopied = false; }, 2500);
+            });
+        },
+
+        copyCronSyncUrl() {
+            navigator.clipboard.writeText(this.cronSyncUrl).then(() => {
+                this.cronSyncCopied = true;
+                setTimeout(() => { this.cronSyncCopied = false; }, 2500);
+            });
+        },
+
+        copyCronSyncAllUrl() {
+            navigator.clipboard.writeText(this.cronSyncAllUrl).then(() => {
+                this.cronSyncAllCopied = true;
+                setTimeout(() => { this.cronSyncAllCopied = false; }, 2500);
+            });
+        },
+
+        saveAutoWelcomeSettings() {
+            this.autoWelcomeSubmitting = true;
+            this.autoWelcomeAlert = null;
+
+            fetch('{{ route('meta-leads.campaigns.automation-settings', $campaign) }}', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    auto_welcome_enabled: this.autoWelcomeEnabled ? 1 : 0,
+                    auto_welcome_whatsapp: this.autoWelcomeWhatsApp ? 1 : 0,
+                    auto_welcome_whatsapp_template_id: this.autoWelcomeWhatsAppTemplateId || null,
+                    auto_welcome_whatsapp_message: this.autoWelcomeWhatsAppMessage,
+                    auto_welcome_whatsapp_media_url: this.autoWelcomeWhatsAppMediaUrl || null,
+                    auto_welcome_email: this.autoWelcomeEmail ? 1 : 0,
+                    auto_welcome_email_template_id: this.autoWelcomeEmailTemplateId || null,
+                    auto_welcome_email_subject: this.autoWelcomeEmailSubject,
+                    auto_welcome_email_body: this.autoWelcomeEmailBody,
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.autoWelcomeSubmitting = false;
+                if (data.success) {
+                    this.autoWelcomeAlert = { success: true, message: data.message || 'Auto-welcome settings saved successfully.' };
+                    setTimeout(() => {
+                        this.autoWelcomeModalOpen = false;
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    this.autoWelcomeAlert = { success: false, error: data.error || 'Failed to save settings.' };
+                }
+            })
+            .catch(err => {
+                this.autoWelcomeSubmitting = false;
+                this.autoWelcomeAlert = { success: false, error: err.message };
+            });
+        },
+
+        deactivateAutoWelcome() {
+            if (!confirm('Are you sure you want to deactivate automatic welcome messages for this campaign? No new leads will receive automatic WhatsApp or Email until re-enabled.')) {
+                return;
+            }
+
+            this.deactivatingAutoWelcome = true;
+            this.autoWelcomeAlert = null;
+
+            fetch('{{ route('meta-leads.campaigns.automation-settings', $campaign) }}', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    auto_welcome_enabled: 0,
+                    auto_welcome_whatsapp: this.autoWelcomeWhatsApp ? 1 : 0,
+                    auto_welcome_whatsapp_template_id: this.autoWelcomeWhatsAppTemplateId || null,
+                    auto_welcome_whatsapp_message: this.autoWelcomeWhatsAppMessage,
+                    auto_welcome_whatsapp_media_url: this.autoWelcomeWhatsAppMediaUrl || null,
+                    auto_welcome_email: this.autoWelcomeEmail ? 1 : 0,
+                    auto_welcome_email_template_id: this.autoWelcomeEmailTemplateId || null,
+                    auto_welcome_email_subject: this.autoWelcomeEmailSubject,
+                    auto_welcome_email_body: this.autoWelcomeEmailBody,
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.deactivatingAutoWelcome = false;
+                if (data.success) {
+                    this.autoWelcomeEnabled = false;
+                    if (this.autoWelcomeModalOpen) {
+                        this.autoWelcomeAlert = { success: true, message: 'Auto-welcome has been deactivated successfully.' };
+                        setTimeout(() => {
+                            this.autoWelcomeModalOpen = false;
+                            window.location.reload();
+                        }, 800);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    alert(data.error || 'Failed to deactivate auto-welcome.');
+                }
+            })
+            .catch(err => {
+                this.deactivatingAutoWelcome = false;
+                alert('Error deactivating auto-welcome: ' + err.message);
+            });
+        },
+
+        activateAutoWelcome() {
+            this.activatingAutoWelcome = true;
+            this.autoWelcomeAlert = null;
+
+            fetch('{{ route('meta-leads.campaigns.automation-settings', $campaign) }}', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    auto_welcome_enabled: 1,
+                    auto_welcome_whatsapp: this.autoWelcomeWhatsApp ? 1 : 1,
+                    auto_welcome_whatsapp_template_id: this.autoWelcomeWhatsAppTemplateId || null,
+                    auto_welcome_whatsapp_message: this.autoWelcomeWhatsAppMessage,
+                    auto_welcome_whatsapp_media_url: this.autoWelcomeWhatsAppMediaUrl || null,
+                    auto_welcome_email: this.autoWelcomeEmail ? 1 : 1,
+                    auto_welcome_email_template_id: this.autoWelcomeEmailTemplateId || null,
+                    auto_welcome_email_subject: this.autoWelcomeEmailSubject,
+                    auto_welcome_email_body: this.autoWelcomeEmailBody,
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.activatingAutoWelcome = false;
+                if (data.success) {
+                    this.autoWelcomeEnabled = true;
+                    if (this.autoWelcomeModalOpen) {
+                        this.autoWelcomeAlert = { success: true, message: 'Auto-welcome has been activated successfully!' };
+                        setTimeout(() => {
+                            this.autoWelcomeModalOpen = false;
+                            window.location.reload();
+                        }, 800);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    alert(data.error || 'Failed to activate auto-welcome.');
+                }
+            })
+            .catch(err => {
+                this.activatingAutoWelcome = false;
+                alert('Error activating auto-welcome: ' + err.message);
+            });
+        },
+
+        submitNewLead() {
+            if (!this.newLead.name) {
+                alert('Please enter the lead full name.');
+                return;
+            }
+            if (!this.newLead.phone && !this.newLead.email) {
+                alert('Please provide either a phone number or an email address.');
+                return;
+            }
+
+            this.addLeadSubmitting = true;
+            this.addLeadAlert = null;
+
+            fetch('{{ route('meta-leads.campaigns.leads.store', $campaign) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(this.newLead)
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.addLeadSubmitting = false;
+                if (data.success) {
+                    this.addLeadAlert = { success: true, message: data.message };
+                    setTimeout(() => {
+                        this.addLeadModalOpen = false;
+                        window.location.reload();
+                    }, 1200);
+                } else {
+                    this.addLeadAlert = { success: false, error: data.error || 'Failed to add lead.' };
+                }
+            })
+            .catch(err => {
+                this.addLeadSubmitting = false;
+                this.addLeadAlert = { success: false, error: err.message };
+            });
+        },
+
+        dispatchToAllPending() {
+            if (!confirm('This will send welcome messages to all uncontacted leads in this campaign. Proceed?')) {
+                return;
+            }
+
+            this.dispatchPendingSubmitting = true;
+            this.dispatchPendingAlert = null;
+
+            fetch('{{ route('meta-leads.campaigns.dispatch-pending-welcome', $campaign) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.dispatchPendingSubmitting = false;
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Dispatch failed.');
+                }
+            })
+            .catch(err => {
+                this.dispatchPendingSubmitting = false;
+                alert('Error: ' + err.message);
+            });
         }
     };
 };
@@ -284,6 +615,46 @@ window.campaignDashboard = function() {
                 } }}">
                     {{ ucfirst($campaign->status) }}
                 </span>
+
+                <!-- Auto-Welcome Status Pill -->
+                <button
+                    type="button"
+                    @click="openAutoWelcomeModal()"
+                    class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full border transition cursor-pointer"
+                    :class="autoWelcomeEnabled ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'"
+                    title="Click to configure automatic welcome messages"
+                >
+                    <span class="w-2 h-2 rounded-full" :class="autoWelcomeEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'"></span>
+                    <span x-text="autoWelcomeEnabled ? '⚡ Auto-Welcome: ACTIVE' : '⚡ Auto-Welcome: OFF'"></span>
+                </button>
+
+                <!-- Activate Quick Button (visible when OFF) -->
+                <button
+                    type="button"
+                    x-show="!autoWelcomeEnabled"
+                    @click="activateAutoWelcome()"
+                    :disabled="activatingAutoWelcome"
+                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 transition active:scale-95 cursor-pointer shadow-2xs"
+                    title="Turn on automatic welcome messages for this campaign"
+                >
+                    <i class="fa-solid fa-bolt text-emerald-600 text-[10px]" x-show="!activatingAutoWelcome"></i>
+                    <i class="fa-solid fa-spinner animate-spin text-emerald-600 text-[10px]" x-show="activatingAutoWelcome"></i>
+                    <span x-text="activatingAutoWelcome ? 'Activating...' : 'Activate Auto-Reply'"></span>
+                </button>
+
+                <!-- Deactivate Quick Button (visible when active) -->
+                <button
+                    type="button"
+                    x-show="autoWelcomeEnabled"
+                    @click="deactivateAutoWelcome()"
+                    :disabled="deactivatingAutoWelcome"
+                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 transition active:scale-95 cursor-pointer shadow-2xs"
+                    title="Turn off automatic welcome messages for this campaign"
+                >
+                    <i class="fa-solid fa-power-off text-rose-600 text-[10px]" x-show="!deactivatingAutoWelcome"></i>
+                    <i class="fa-solid fa-spinner animate-spin text-rose-600 text-[10px]" x-show="deactivatingAutoWelcome"></i>
+                    <span x-text="deactivatingAutoWelcome ? 'Turning Off...' : 'Turn Off Auto-Send'"></span>
+                </button>
             </div>
             @if($campaign->description)
                 <p class="text-xs text-slate-500 font-medium mt-0.5">{{ $campaign->description }}</p>
@@ -292,6 +663,60 @@ window.campaignDashboard = function() {
 
         <!-- Action Toolbar -->
         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <!-- + Add Lead Button -->
+            <button
+                type="button"
+                @click="openAddLeadModal()"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+                title="Add a new lead manually to this campaign"
+            >
+                <i class="fa-solid fa-user-plus text-xs"></i>
+                <span>Add Lead</span>
+            </button>
+
+            <!-- Auto-Welcome Settings Button -->
+            <button
+                type="button"
+                @click="openAutoWelcomeModal()"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 shadow-2xs transition active:scale-95 cursor-pointer"
+                title="Configure automatic WhatsApp and Email welcome messages"
+            >
+                <i class="fa-solid fa-bolt text-amber-500 text-xs"></i>
+                <span>Auto-Welcome</span>
+                <span class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded-full"
+                      :class="autoWelcomeEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'"
+                      x-text="autoWelcomeEnabled ? 'ON' : 'OFF'">
+                </span>
+            </button>
+
+            <!-- Activate Auto-Reply Button in Toolbar (visible when OFF) -->
+            <button
+                type="button"
+                x-show="!autoWelcomeEnabled"
+                @click="activateAutoWelcome()"
+                :disabled="activatingAutoWelcome"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+                title="Activate automatic welcome messaging"
+            >
+                <i class="fa-solid fa-bolt text-xs" x-show="!activatingAutoWelcome"></i>
+                <i class="fa-solid fa-spinner animate-spin text-xs" x-show="activatingAutoWelcome"></i>
+                <span x-text="activatingAutoWelcome ? 'Activating...' : 'Activate Auto-Reply'"></span>
+            </button>
+
+            <!-- Deactivate Auto-Send Button in Toolbar -->
+            <button
+                type="button"
+                x-show="autoWelcomeEnabled"
+                @click="deactivateAutoWelcome()"
+                :disabled="deactivatingAutoWelcome"
+                class="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-300 shadow-2xs transition active:scale-95 cursor-pointer"
+                title="Deactivate automatic welcome messaging"
+            >
+                <i class="fa-solid fa-power-off text-rose-600 text-xs" x-show="!deactivatingAutoWelcome"></i>
+                <i class="fa-solid fa-spinner animate-spin text-rose-600 text-xs" x-show="deactivatingAutoWelcome"></i>
+                <span x-text="deactivatingAutoWelcome ? 'Deactivating...' : 'Deactivate Auto-Send'"></span>
+            </button>
+
             <!-- Sync Sheet Button -->
             <form method="POST" action="{{ route('meta-leads.campaigns.sync', $campaign) }}">
                 @csrf
@@ -706,15 +1131,19 @@ window.campaignDashboard = function() {
     <div
         x-show="bulkEmailModalOpen"
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs"
+        style="overflow: hidden;"
         role="dialog"
     >
-        <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs" @click="if(!emailSubmitting) bulkEmailModalOpen = false"></div>
+        <div class="fixed inset-0" @click="if(!emailSubmitting) bulkEmailModalOpen = false"></div>
 
-        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-8">
-            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+        <div
+            class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-10"
+            style="max-height: 84vh; height: auto; overflow: hidden;"
+        >
+            <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70 shrink-0">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+                    <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shadow-2xs">
                         <i class="fa-solid fa-envelope"></i>
                     </div>
                     <div>
@@ -724,18 +1153,18 @@ window.campaignDashboard = function() {
                         </p>
                     </div>
                 </div>
-                <button type="button" @click="bulkEmailModalOpen = false" class="text-slate-400 hover:text-slate-700" :disabled="emailSubmitting">
-                    <i class="fa-solid fa-xmark text-sm"></i>
+                <button type="button" @click="bulkEmailModalOpen = false" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition" :disabled="emailSubmitting">
+                    <i class="fa-solid fa-xmark text-base"></i>
                 </button>
             </div>
 
-            <form method="POST" action="{{ route('meta-leads.campaigns.send-email', $campaign) }}" @submit="emailSubmitting = true">
+            <form method="POST" action="{{ route('meta-leads.campaigns.send-email', $campaign) }}" @submit="emailSubmitting = true" class="flex flex-col flex-1 min-h-0 overflow-hidden">
                 @csrf
                 <template x-for="id in selectedLeads" :key="id">
                     <input type="hidden" name="lead_ids[]" :value="id">
                 </template>
 
-                <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div class="p-4 sm:p-5 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1 overscroll-contain text-xs">
                     <!-- Template Selector -->
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Load Saved Email Template</label>
@@ -876,18 +1305,18 @@ window.campaignDashboard = function() {
                                 Send 1 Test Email (Preview Before Broadcast)
                             </span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             <input
                                 type="email"
                                 x-model="testEmailAddress"
                                 placeholder="Your test email address"
-                                class="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800"
+                                class="flex-1 px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800"
                             >
                             <button
                                 type="button"
                                 @click="sendModalTestEmail()"
                                 :disabled="testSending"
-                                class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap"
+                                class="inline-flex items-center justify-center gap-1 px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap"
                             >
                                 <i class="fa-solid fa-spinner animate-spin" x-show="testSending"></i>
                                 <i class="fa-solid fa-paper-plane text-[10px]" x-show="!testSending"></i>
@@ -901,13 +1330,13 @@ window.campaignDashboard = function() {
                     </div>
                 </div>
 
-                <div class="px-5 py-3 border-t border-slate-200 bg-slate-50/50 flex items-center justify-end gap-2.5">
-                    <button type="button" @click="bulkEmailModalOpen = false" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">
+                <div class="px-4 sm:px-5 py-3 sm:py-3.5 border-t border-slate-200 bg-slate-50/70 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0">
+                    <button type="button" @click="bulkEmailModalOpen = false" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer text-center">
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
                         :disabled="emailSubmitting"
                     >
                         <i class="fa-solid fa-spinner animate-spin" x-show="emailSubmitting"></i>
@@ -923,15 +1352,19 @@ window.campaignDashboard = function() {
     <div
         x-show="bulkWhatsAppModalOpen"
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs"
+        style="overflow: hidden;"
         role="dialog"
     >
-        <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs" @click="if(!whatsappSubmitting) bulkWhatsAppModalOpen = false"></div>
+        <div class="fixed inset-0" @click="if(!whatsappSubmitting) bulkWhatsAppModalOpen = false"></div>
 
-        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-10 my-8">
-            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+        <div
+            class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-10"
+            style="max-height: 84vh; height: auto; overflow: hidden;"
+        >
+            <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70 shrink-0">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-base font-bold">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-base font-bold shadow-2xs">
                         <i class="fa-brands fa-whatsapp"></i>
                     </div>
                     <div>
@@ -941,18 +1374,18 @@ window.campaignDashboard = function() {
                         </p>
                     </div>
                 </div>
-                <button type="button" @click="bulkWhatsAppModalOpen = false" class="text-slate-400 hover:text-slate-700" :disabled="whatsappSubmitting">
-                    <i class="fa-solid fa-xmark text-sm"></i>
+                <button type="button" @click="bulkWhatsAppModalOpen = false" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg transition" :disabled="whatsappSubmitting">
+                    <i class="fa-solid fa-xmark text-base"></i>
                 </button>
             </div>
 
-            <form method="POST" action="{{ route('meta-leads.campaigns.send-whatsapp', $campaign) }}" @submit="whatsappSubmitting = true">
+            <form method="POST" action="{{ route('meta-leads.campaigns.send-whatsapp', $campaign) }}" @submit="whatsappSubmitting = true" class="flex flex-col flex-1 min-h-0 overflow-hidden">
                 @csrf
                 <template x-for="id in selectedLeads" :key="id">
                     <input type="hidden" name="lead_ids[]" :value="id">
                 </template>
 
-                <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div class="p-4 sm:p-5 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1 overscroll-contain text-xs">
                     <!-- Template Selector -->
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">Load Saved WhatsApp Template</label>
@@ -1051,8 +1484,8 @@ window.campaignDashboard = function() {
                     </div>
 
                     <!-- Realistic WhatsApp Bubble Preview -->
-                    <div x-show="whatsappPreviewMode" class="p-4 bg-[#e5ddd5] rounded-xl border border-slate-300 flex justify-end">
-                        <div class="max-w-md bg-[#d9fdd3] p-3 rounded-2xl shadow-sm text-xs text-slate-800 leading-relaxed relative space-y-2">
+                    <div x-show="whatsappPreviewMode" class="p-3 sm:p-4 bg-[#e5ddd5] rounded-xl border border-slate-300 flex justify-end">
+                        <div class="w-full sm:max-w-md bg-[#d9fdd3] p-3.5 rounded-2xl shadow-sm text-xs text-slate-800 leading-relaxed relative space-y-2">
                             <div x-show="whatsappMediaUrl" class="rounded-lg overflow-hidden border border-slate-300">
                                 <img :src="whatsappMediaUrl" class="max-h-48 w-full object-cover">
                             </div>
@@ -1080,18 +1513,18 @@ window.campaignDashboard = function() {
                                 Send 1 Test WhatsApp (Verify on Your Mobile)
                             </span>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             <input
                                 type="text"
                                 x-model="testPhone"
                                 placeholder="Your 10-digit mobile number"
-                                class="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+                                class="flex-1 px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800 font-mono"
                             >
                             <button
                                 type="button"
                                 @click="sendModalTestWhatsApp()"
                                 :disabled="testSending"
-                                class="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap"
+                                class="inline-flex items-center justify-center gap-1 px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap"
                             >
                                 <i class="fa-solid fa-spinner animate-spin" x-show="testSending"></i>
                                 <i class="fa-solid fa-paper-plane text-[10px]" x-show="!testSending"></i>
@@ -1105,13 +1538,13 @@ window.campaignDashboard = function() {
                     </div>
                 </div>
 
-                <div class="px-5 py-3 border-t border-slate-200 bg-slate-50/50 flex items-center justify-end gap-2.5">
-                    <button type="button" @click="bulkWhatsAppModalOpen = false" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">
+                <div class="px-4 sm:px-5 py-3 sm:py-3.5 border-t border-slate-200 bg-slate-50/70 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0">
+                    <button type="button" @click="bulkWhatsAppModalOpen = false" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer text-center">
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
                         :disabled="whatsappSubmitting"
                     >
                         <i class="fa-solid fa-spinner animate-spin" x-show="whatsappSubmitting"></i>
@@ -1127,16 +1560,16 @@ window.campaignDashboard = function() {
     <div
         x-show="detailDrawerOpen"
         x-cloak
-        class="fixed inset-0 z-50 flex items-center justify-center sm:justify-end p-3 sm:p-0 overflow-y-auto"
+        class="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-end p-0 overflow-hidden"
         role="dialog"
     >
-        <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs" @click="detailDrawerOpen = false"></div>
+        <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity" @click="detailDrawerOpen = false"></div>
 
-        <div class="relative w-full max-w-lg h-full max-h-[95vh] sm:max-h-full bg-white sm:rounded-l-3xl shadow-2xl border-l border-slate-200 flex flex-col z-10 overflow-hidden">
+        <div class="relative w-full max-w-lg h-[92dvh] sm:h-full bg-white rounded-t-3xl sm:rounded-t-none sm:rounded-l-3xl shadow-2xl border-l border-slate-200 flex flex-col z-10 overflow-hidden">
             <!-- Drawer Header -->
-            <div class="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-black text-sm">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-2xs">
                         <span x-text="(activeLead?.name || 'M')[0]?.toUpperCase()"></span>
                     </div>
                     <div>
@@ -1144,13 +1577,13 @@ window.campaignDashboard = function() {
                         <p class="text-xs text-slate-500 font-mono" x-text="activeLead?.meta_lead_id || 'ID: ' + activeLead?.id"></p>
                     </div>
                 </div>
-                <button type="button" @click="detailDrawerOpen = false" class="text-slate-400 hover:text-slate-700 p-2">
+                <button type="button" @click="detailDrawerOpen = false" class="text-slate-400 hover:text-slate-700 p-2 rounded-lg transition">
                     <i class="fa-solid fa-xmark text-base"></i>
                 </button>
             </div>
 
             <!-- Drawer Body -->
-            <div class="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+            <div class="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 space-y-4 text-xs">
                 <!-- Contact Summary Box -->
                 <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <div>
@@ -1224,6 +1657,549 @@ window.campaignDashboard = function() {
                     <span>Send Email</span>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Auto-Welcome Automation Settings Modal (Minimal & Non-Overflowing) -->
+    <div
+        x-show="autoWelcomeModalOpen"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs"
+        style="overflow: hidden;"
+        role="dialog"
+    >
+        <div class="fixed inset-0" @click="autoWelcomeModalOpen = false"></div>
+
+        <div
+            class="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-10"
+            style="max-height: 84vh; height: auto; overflow: hidden;"
+        >
+            <!-- Minimal Modal Header -->
+            <div class="px-4 sm:px-5 py-3 border-b border-slate-100 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xs shadow-xs shrink-0">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-bold tracking-tight">Auto-Welcome Settings</h3>
+                            <span class="w-2 h-2 rounded-full" :class="autoWelcomeEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'"></span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">Automate welcome messages for new leads</p>
+                    </div>
+                </div>
+                <button type="button" @click="autoWelcomeModalOpen = false" class="text-slate-400 hover:text-white p-1.5 rounded-lg transition cursor-pointer shrink-0">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Minimal Master Toggle Bar -->
+            <div class="px-4 sm:px-5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-800">Auto-Welcome Messaging</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          :class="autoWelcomeEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'"
+                          x-text="autoWelcomeEnabled ? 'ACTIVE' : 'OFF'">
+                    </span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" x-model="autoWelcomeEnabled" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+            </div>
+
+            <!-- Alert Notice if any -->
+            <div x-show="autoWelcomeAlert" class="mx-4 sm:mx-5 my-2.5 p-2.5 rounded-xl text-xs font-medium shrink-0" :class="autoWelcomeAlert?.success ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid" :class="autoWelcomeAlert?.success ? 'fa-circle-check text-emerald-600' : 'fa-circle-exclamation text-rose-600'"></i>
+                    <span x-text="autoWelcomeAlert?.message || autoWelcomeAlert?.error"></span>
+                </div>
+            </div>
+
+            <!-- Minimal Tab Navigation -->
+            <div class="flex items-center border-b border-slate-200 px-4 sm:px-5 bg-white shrink-0">
+                <button
+                    type="button"
+                    @click="autoWelcomeTab = 'whatsapp'"
+                    class="py-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer"
+                    :class="autoWelcomeTab === 'whatsapp' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-800'"
+                >
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span>WhatsApp</span>
+                    <span class="w-1.5 h-1.5 rounded-full" :class="autoWelcomeWhatsApp ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                </button>
+                <button
+                    type="button"
+                    @click="autoWelcomeTab = 'email'"
+                    class="py-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer"
+                    :class="autoWelcomeTab === 'email' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-800'"
+                >
+                    <i class="fa-solid fa-envelope text-xs"></i>
+                    <span>Email</span>
+                    <span class="w-1.5 h-1.5 rounded-full" :class="autoWelcomeEmail ? 'bg-sky-500' : 'bg-slate-300'"></span>
+                </button>
+                <button
+                    type="button"
+                    @click="autoWelcomeTab = 'webhook'"
+                    class="py-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center gap-1.5 cursor-pointer"
+                    :class="autoWelcomeTab === 'webhook' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-800'"
+                >
+                    <i class="fa-solid fa-link text-xs"></i>
+                    <span>Webhook & API</span>
+                </button>
+            </div>
+
+            <!-- Scrollable Minimal Body -->
+            <div class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs" style="min-height: 0; overscroll-behavior: contain;">
+                <!-- TAB 1: WhatsApp -->
+                <div x-show="autoWelcomeTab === 'whatsapp'" class="space-y-3">
+                    <div class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-slate-50">
+                        <div>
+                            <span class="font-bold text-slate-800 text-xs">Send WhatsApp on New Entry</span>
+                            <p class="text-[11px] text-slate-500">Auto-send WhatsApp to prospect's phone</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" x-model="autoWelcomeWhatsApp" class="sr-only peer">
+                            <div class="w-8 h-4.5 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 text-[11px]">Load from Template</label>
+                        <select
+                            x-model="autoWelcomeWhatsAppTemplateId"
+                            @change="onAutoWelcomeWhatsAppTemplateSelect($event.target.value)"
+                            class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-emerald-500 font-medium text-slate-800"
+                        >
+                            <option value="">Custom WhatsApp Message</option>
+                            @foreach($whatsappTemplates as $tmpl)
+                                <option value="{{ $tmpl->id }}">{{ $tmpl->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1 text-[11px]">
+                            <label class="font-bold text-slate-700">WhatsApp Message</label>
+                            <span class="text-slate-400">Dynamic tags supported</span>
+                        </div>
+                        <textarea
+                            x-model="autoWelcomeWhatsAppMessage"
+                            rows="4"
+                            placeholder="Hi @{{full_name}}, thank you for reaching out..."
+                            class="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-emerald-500 text-slate-800 leading-relaxed font-sans"
+                        ></textarea>
+                    </div>
+
+                    <!-- Dynamic tags -->
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Insert Variable</span>
+                        <div class="flex flex-wrap gap-1">
+                            @foreach(array_slice($campaign->getAvailableVariables(), 0, 6) as $var)
+                                <button
+                                    type="button"
+                                    @click="insertAutoWelcomeWhatsAppVar('{{ $var }}')"
+                                    class="px-2 py-0.5 bg-slate-100 hover:bg-emerald-100 hover:text-emerald-800 text-slate-600 rounded-md text-[10px] font-mono transition cursor-pointer"
+                                >
+                                    + &#123;&#123; {{ $var }} &#125;&#125;
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 text-[11px]">Optional Image URL</label>
+                        <input
+                            type="url"
+                            x-model="autoWelcomeWhatsAppMediaUrl"
+                            placeholder="https://example.com/banner.jpg"
+                            class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono text-slate-800"
+                        >
+                    </div>
+
+                    <!-- Collapsible Preview -->
+                    <div x-data="{ showPreview: false }" class="border border-slate-200 rounded-xl overflow-hidden">
+                        <button
+                            type="button"
+                            @click="showPreview = !showPreview"
+                            class="w-full px-3 py-2 bg-slate-50 flex items-center justify-between text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                        >
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-eye text-slate-400"></i>
+                                <span>Preview Message</span>
+                            </span>
+                            <i class="fa-solid text-[10px]" :class="showPreview ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        </button>
+                        <div x-show="showPreview" class="p-3 bg-emerald-50/50 border-t border-slate-200 text-slate-700 text-xs whitespace-pre-line leading-relaxed">
+                            <p x-text="getSamplePreview(autoWelcomeWhatsAppMessage) || 'No message content defined.'"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Email -->
+                <div x-show="autoWelcomeTab === 'email'" class="space-y-3">
+                    <div class="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-slate-50">
+                        <div>
+                            <span class="font-bold text-slate-800 text-xs">Send Email on New Entry</span>
+                            <p class="text-[11px] text-slate-500">Auto-send email to prospect's email address</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" x-model="autoWelcomeEmail" class="sr-only peer">
+                            <div class="w-8 h-4.5 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-sky-600"></div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 text-[11px]">Load from Template</label>
+                        <select
+                            x-model="autoWelcomeEmailTemplateId"
+                            @change="onAutoWelcomeEmailTemplateSelect($event.target.value)"
+                            class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium text-slate-800"
+                        >
+                            <option value="">Custom Email</option>
+                            @foreach($emailTemplates as $tmpl)
+                                <option value="{{ $tmpl->id }}">{{ $tmpl->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 text-[11px]">Subject</label>
+                        <input
+                            type="text"
+                            x-model="autoWelcomeEmailSubject"
+                            placeholder="Welcome @{{full_name}} - The House of Abhinandan Lodha"
+                            class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-sky-500 font-medium text-slate-800"
+                        >
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1 text-[11px]">
+                            <label class="font-bold text-slate-700">Email Body</label>
+                            <span class="text-slate-400">HTML & dynamic tags</span>
+                        </div>
+                        <textarea
+                            x-model="autoWelcomeEmailBody"
+                            rows="4"
+                            placeholder="Dear @{{full_name}}, ..."
+                            class="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-sky-500 text-slate-800 leading-relaxed font-sans"
+                        ></textarea>
+                    </div>
+
+                    <!-- Dynamic tags -->
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Insert Variable</span>
+                        <div class="flex flex-wrap gap-1">
+                            @foreach(array_slice($campaign->getAvailableVariables(), 0, 6) as $var)
+                                <button
+                                    type="button"
+                                    @click="insertAutoWelcomeEmailVar('{{ $var }}')"
+                                    class="px-2 py-0.5 bg-slate-100 hover:bg-sky-100 hover:text-sky-800 text-slate-600 rounded-md text-[10px] font-mono transition cursor-pointer"
+                                >
+                                    + &#123;&#123; {{ $var }} &#125;&#125;
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Preview -->
+                    <div x-data="{ showEmailPreview: false }" class="border border-slate-200 rounded-xl overflow-hidden">
+                        <button
+                            type="button"
+                            @click="showEmailPreview = !showEmailPreview"
+                            class="w-full px-3 py-2 bg-slate-50 flex items-center justify-between text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                        >
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-eye text-slate-400"></i>
+                                <span>Preview Email</span>
+                            </span>
+                            <i class="fa-solid text-[10px]" :class="showEmailPreview ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        </button>
+                        <div x-show="showEmailPreview" class="p-3 bg-white border-t border-slate-200 text-xs">
+                            <p class="font-bold text-slate-800 pb-1.5 mb-2 border-b border-slate-100" x-text="'Subject: ' + (getSamplePreview(autoWelcomeEmailSubject) || '—')"></p>
+                            <div class="prose max-w-none text-slate-700 text-xs" x-html="getSamplePreview(autoWelcomeEmailBody) || '<em>No body defined.</em>'"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: Webhook & Cron -->
+                <div x-show="autoWelcomeTab === 'webhook'" class="space-y-3">
+                    <div class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-200 text-xs text-indigo-950">
+                        <p class="font-bold mb-0.5">Automated External Submissions</p>
+                        <p class="text-[11px] text-indigo-800 leading-normal">POST new leads to this webhook URL to instantly trigger auto-welcome dispatches.</p>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 text-[11px]">Campaign Webhook URL</label>
+                        <div class="flex items-center gap-1.5">
+                            <input
+                                type="text"
+                                readonly
+                                :value="webhookUrl"
+                                class="flex-1 px-3 py-1.5 bg-slate-100 font-mono text-[11px] border border-slate-300 rounded-xl select-all text-slate-700"
+                            >
+                            <button
+                                type="button"
+                                @click="copyWebhookUrl()"
+                                class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl transition cursor-pointer shrink-0"
+                            >
+                                <i class="fa-solid" :class="webhookCopied ? 'fa-check text-emerald-400' : 'fa-copy'"></i>
+                                <span x-text="webhookCopied ? 'Copied' : 'Copy'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="font-bold text-slate-700 text-[11px]">Master Cron URL (All Campaigns - Recommended)</label>
+                            <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">1 Cron For All</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <input
+                                type="text"
+                                readonly
+                                :value="cronSyncAllUrl"
+                                class="flex-1 px-3 py-1.5 bg-emerald-50/60 font-mono text-[11px] border border-emerald-300 rounded-xl select-all text-slate-800"
+                            >
+                            <button
+                                type="button"
+                                @click="copyCronSyncAllUrl()"
+                                class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl transition cursor-pointer shrink-0"
+                            >
+                                <i class="fa-solid" :class="cronSyncAllCopied ? 'fa-check text-emerald-300' : 'fa-copy'"></i>
+                                <span x-text="cronSyncAllCopied ? 'Copied' : 'Copy'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1 text-[11px]">This Campaign Only Cron URL</label>
+                        <div class="flex items-center gap-1.5">
+                            <input
+                                type="text"
+                                readonly
+                                :value="cronSyncUrl"
+                                class="flex-1 px-3 py-1.5 bg-slate-100 font-mono text-[11px] border border-slate-300 rounded-xl select-all text-slate-700"
+                            >
+                            <button
+                                type="button"
+                                @click="copyCronSyncUrl()"
+                                class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition cursor-pointer shrink-0"
+                            >
+                                <i class="fa-solid" :class="cronSyncCopied ? 'fa-check text-emerald-300' : 'fa-copy'"></i>
+                                <span x-text="cronSyncCopied ? 'Copied' : 'Copy'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Minimal Modal Footer -->
+            <div class="px-4 sm:px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <!-- Quick Activate (when OFF) -->
+                    <button
+                        type="button"
+                        x-show="!autoWelcomeEnabled"
+                        @click="activateAutoWelcome()"
+                        :disabled="activatingAutoWelcome"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                        title="Activate auto-welcome"
+                    >
+                        <i class="fa-solid fa-bolt text-xs" x-show="!activatingAutoWelcome"></i>
+                        <i class="fa-solid fa-spinner animate-spin text-xs" x-show="activatingAutoWelcome"></i>
+                        <span x-text="activatingAutoWelcome ? 'Activating...' : 'Activate'"></span>
+                    </button>
+
+                    <!-- Quick Deactivate (when ON) -->
+                    <button
+                        type="button"
+                        x-show="autoWelcomeEnabled"
+                        @click="deactivateAutoWelcome()"
+                        :disabled="deactivatingAutoWelcome"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition cursor-pointer"
+                        title="Deactivate auto-welcome"
+                    >
+                        <i class="fa-solid fa-power-off text-xs" x-show="!deactivatingAutoWelcome"></i>
+                        <i class="fa-solid fa-spinner animate-spin text-xs" x-show="deactivatingAutoWelcome"></i>
+                        <span x-text="deactivatingAutoWelcome ? 'Turning Off...' : 'Deactivate'"></span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button
+                        type="button"
+                        @click="autoWelcomeModalOpen = false"
+                        class="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        @click="saveAutoWelcomeSettings()"
+                        :disabled="autoWelcomeSubmitting"
+                        class="inline-flex items-center gap-1.5 px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                    >
+                        <i class="fa-solid fa-spinner animate-spin text-xs" x-show="autoWelcomeSubmitting"></i>
+                        <i class="fa-solid fa-check text-xs" x-show="!autoWelcomeSubmitting"></i>
+                        <span x-text="autoWelcomeSubmitting ? 'Saving...' : 'Save Settings'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Lead Modal -->
+    <div
+        x-show="addLeadModalOpen"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs"
+        style="overflow: hidden;"
+        role="dialog"
+    >
+        <div class="fixed inset-0" @click="addLeadModalOpen = false"></div>
+
+        <div
+            class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-10"
+            style="max-height: 84vh; height: auto; overflow: hidden;"
+        >
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-100 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-md shrink-0">
+                        <i class="fa-solid fa-user-plus text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold">Add New Lead Entry</h3>
+                        <p class="text-xs text-slate-400">Add prospect directly to {{ $campaign->name }}</p>
+                    </div>
+                </div>
+                <button type="button" @click="addLeadModalOpen = false" class="text-slate-400 hover:text-white p-2 rounded-xl transition cursor-pointer shrink-0">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form @submit.prevent="submitNewLead()" class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div class="p-4 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1 overscroll-contain text-xs">
+                    <div x-show="addLeadAlert" class="p-3 rounded-xl text-xs font-medium" :class="addLeadAlert?.success ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'">
+                        <span x-text="addLeadAlert?.message || addLeadAlert?.error"></span>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Full Name <span class="text-rose-500">*</span></label>
+                        <input
+                            type="text"
+                            x-model="newLead.name"
+                            required
+                            placeholder="e.g. Ramesh Patel"
+                            class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
+                        >
+                    </div>
+
+                    <!-- Phone and Email Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">WhatsApp / Phone Number</label>
+                            <input
+                                type="text"
+                                x-model="newLead.phone"
+                                placeholder="e.g. 9876543210"
+                                class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 font-mono"
+                            >
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Email Address</label>
+                            <input
+                                type="email"
+                                x-model="newLead.email"
+                                placeholder="e.g. ramesh@example.com"
+                                class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- City and Platform Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">City / Location</label>
+                            <input
+                                type="text"
+                                x-model="newLead.city"
+                                placeholder="e.g. Mumbai, Delhi..."
+                                class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
+                            >
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Lead Source / Platform</label>
+                            <select
+                                x-model="newLead.platform"
+                                class="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
+                            >
+                                <option value="Manual Entry">Manual Entry</option>
+                                <option value="Meta Ads">Meta Ads</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Website Form">Website Form</option>
+                                <option value="WhatsApp Direct">WhatsApp Direct</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Custom Fields (from Google Sheet headers if any) -->
+                    @if(isset($customVariables) && count($customVariables) > 0)
+                        <div class="pt-2 border-t border-slate-100 space-y-2">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Campaign Custom Fields</p>
+                            @foreach($customVariables as $var)
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">{{ ucwords(str_replace('_', ' ', $var)) }}</label>
+                                    <input
+                                        type="text"
+                                        x-model="newLead.custom_fields['{{ $var }}']"
+                                        placeholder="Enter {{ str_replace('_', ' ', $var) }}"
+                                        class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800"
+                                    >
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <!-- Immediate Welcome Trigger Checkbox -->
+                    <div class="p-3.5 bg-indigo-50/70 rounded-2xl border border-indigo-200">
+                        <label class="flex items-center gap-2.5 text-xs font-bold text-indigo-950 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                x-model="newLead.send_welcome"
+                                class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                            >
+                            <span>Automatically send welcome message (WhatsApp & Email) now</span>
+                        </label>
+                        <p class="text-[10px] text-indigo-700/80 ml-6.5 mt-0.5">Dispatches personalized welcome message using the campaign's active auto-welcome template.</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-200 bg-slate-50 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 shrink-0">
+                    <button
+                        type="button"
+                        @click="addLeadModalOpen = false"
+                        class="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition cursor-pointer text-center"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        :disabled="addLeadSubmitting"
+                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition active:scale-95 cursor-pointer"
+                    >
+                        <i class="fa-solid fa-spinner animate-spin" x-show="addLeadSubmitting"></i>
+                        <i class="fa-solid fa-user-plus" x-show="!addLeadSubmitting"></i>
+                        <span x-text="addLeadSubmitting ? 'Adding Lead...' : 'Save & Add Lead'"></span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
